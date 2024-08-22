@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">XiVPN</string>
+    <string name="statistics">Statistics</string>
+    <string name="select_outbound">freedom</string>
+    <string name="subscriptions">Subscriptions</string>
+    <string name="proxies">Proxies</string>
 </resources>
