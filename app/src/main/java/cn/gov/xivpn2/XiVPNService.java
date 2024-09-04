@@ -18,9 +18,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.logging.Logger;
+
+import cn.gov.xivpn2.xrayconfig.Config;
 
 public class XiVPNService extends VpnService {
 
@@ -29,6 +34,7 @@ public class XiVPNService extends VpnService {
     private VPNStatusListener listener;
     private Status status = Status.DISCONNECTED;
     private ParcelFileDescriptor fileDescriptor;
+    public static final int SOCKS_PORT = 18964;
 
     public static enum Status {
         CONNECTED,
@@ -58,7 +64,7 @@ public class XiVPNService extends VpnService {
         return Service.START_NOT_STICKY;
     }
 
-    public synchronized void startVPN() {
+    public synchronized void startVPN(Config config) {
         if (status != Status.DISCONNECTED) return;
 
         status = Status.CONNECTING;
@@ -85,7 +91,10 @@ public class XiVPNService extends VpnService {
         fileDescriptor = vpnBuilder.establish();
 
         // start libxivpn
-        LibXivpn.xivpn_start("{\"log\":{\"loglevel\":\"info\"},\"inbounds\":[{\"port\":18964,\"listen\":\"10.89.64.1\",\"protocol\":\"socks\",\"settings\":{\"udp\":true}}],\"outbounds\":[{\"protocol\":\"freedom\"}]}", 18964, fileDescriptor.detachFd());
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String xrayConfig = gson.toJson(config);
+        Log.i(TAG, "xray config: " + xrayConfig);
+        LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.detachFd());
 
         status = Status.CONNECTED;
         if (listener != null) listener.onStatusChanged(status);

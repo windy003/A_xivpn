@@ -4,4 +4,14 @@
     <string name="select_outbound">freedom</string>
     <string name="subscriptions">Subscriptions</string>
     <string name="proxies">Proxies</string>
+    <string name="timeout">Timeout</string>
+    <string name="add">Add</string>
+    <string name="shadowsocks">Shadowsocks</string>
+    <string name="save">Save</string>
+    <string name="label">Label</string>
+    <string name="ok">OK</string>
+    <string name="invalid_value">Invalid value</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="select">Select</string>
 </resources>
