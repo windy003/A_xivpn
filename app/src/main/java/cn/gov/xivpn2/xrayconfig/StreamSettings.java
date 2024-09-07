@@ -7,4 +7,6 @@ public class StreamSettings {
     public SplitHttpSettings splithttpSettings;
     public HttpUpgradeSettings httpupgradeSettings;
     public QuicSettings quicSettings;
+    public TLSSettings tlsSettings;
+    public RealitySettings realitySettings;
 }

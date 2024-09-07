@@ -62,6 +62,20 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
+    public void addInputAfter(String key, Input input) {
+        for (int i = 0; i < inputs.size(); i++) {
+            if (inputs.get(i).key.equals(key)) {
+                inputs.add(i + 1, input);
+                this.notifyItemInserted(i + 1);
+                break;
+            }
+            if (inputs.get(i).key.equals(input.key)) {
+                // skip if input with same key exists
+                break;
+            }
+        }
+    }
+
     public void addInput(String key, String label) {
         this.addInput(new Input(key, label, "", Collections.emptyList()));
     }
@@ -76,6 +90,22 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     public void addInput(String key, String label, List<String> selections) {
         this.addInput(new Input(key, label, "", selections));
+    }
+
+    public void addInputAfter(String after, String key, String label) {
+        this.addInputAfter(after, new Input(key, label, "", Collections.emptyList()));
+    }
+
+    public void addInputAfter(String after, String key, String label, String defaultValue) {
+        this.addInputAfter(after, new Input(key, label, "", Collections.emptyList(), defaultValue));
+    }
+
+    public void addInputAfter(String after, String key, String label, String defaultValue, String helperText) {
+        this.addInputAfter(after, new Input(key, label, helperText, Collections.emptyList(), defaultValue));
+    }
+
+    public void addInputAfter(String after, String key, String label, List<String> selections) {
+        this.addInputAfter(after, new Input(key, label, "", selections));
     }
 
     /**
@@ -186,6 +216,12 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         return inputs.size();
     }
 
+    /**
+     * validate user input values
+     * @param consumer a function that takes a key-value pair and return true if
+     *                 the user-provided value if valid
+     * @return true if all values are valid
+     */
     public boolean validate(BiFunction<String, String, Boolean> consumer) {
         boolean valid = true;
         for (int i = 0; i < inputs.size(); i++) {

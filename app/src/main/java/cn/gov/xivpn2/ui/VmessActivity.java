@@ -39,7 +39,7 @@ public class VmessActivity extends ProxyActivity<VmessSettings>{
 
         VmessUser user = new VmessUser();
         user.id = adapter.getValue("UUID");
-        user.security = adapter.getValue("SECURITY");
+        user.security = adapter.getValue("VMESS_SECURITY");
         vnext.users.add(user);
 
         vmessSettings.vnext.add(vnext);
@@ -53,7 +53,7 @@ public class VmessActivity extends ProxyActivity<VmessSettings>{
         VmessServerSettings vnext = outbound.settings.vnext.get(0);
         hashMap.put("ADDRESS", vnext.address);
         hashMap.put("PORT", String.valueOf(vnext.port));
-        hashMap.put("SECURITY", vnext.users.get(0).security);
+        hashMap.put("VMESS_SECURITY", vnext.users.get(0).security);
         hashMap.put("UUID", vnext.users.get(0).id);
         return hashMap;
     }
@@ -67,7 +67,7 @@ public class VmessActivity extends ProxyActivity<VmessSettings>{
     protected void initializeInputs(ProxyEditTextAdapter adapter) {
         adapter.addInput("ADDRESS", "Address");
         adapter.addInput("PORT", "Port");
-        adapter.addInput("SECURITY", "Security", List.of("auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"));
+        adapter.addInput("VMESS_SECURITY", "VMESS Security", List.of("auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"));
         adapter.addInput("UUID", "UUID");
     }
 }
