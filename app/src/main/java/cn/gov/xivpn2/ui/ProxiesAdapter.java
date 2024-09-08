@@ -1,6 +1,5 @@
 package cn.gov.xivpn2.ui;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +18,10 @@ import cn.gov.xivpn2.database.Proxy;
 
 public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHolder> {
 
-    private OnClickListener listener;
+    private Listener onClickListener;
+    private Listener onLongClickListener;
 
-    public static interface OnClickListener {
+    public static interface Listener {
         void onClick(View v, Proxy proxy, int i);
     }
 
@@ -32,8 +32,12 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
         proxies = new ArrayList<>();
     }
 
-    public void setOnClickListener(OnClickListener listener) {
-        this.listener = listener;
+    public void setOnClickListener(Listener listener) {
+        this.onClickListener = listener;
+    }
+
+    public void setOnLongClickListener(Listener listener) {
+        this.onLongClickListener = listener;
     }
 
     @NonNull
@@ -92,9 +96,16 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
             holder.getSubscription().setText(proxy.subscription);
         }
         holder.getItemView().setOnClickListener(v -> {
-            if (this.listener != null) {
-                this.listener.onClick(v, proxy, position);
+            if (this.onClickListener != null) {
+                this.onClickListener.onClick(v, proxy, position);
             }
+        });
+        holder.getItemView().setOnLongClickListener(v -> {
+            if (this.onLongClickListener != null) {
+                this.onLongClickListener.onClick(v, proxy, position);
+                return true;
+            }
+            return false;
         });
         holder.getCard().setCheckable(true);
         holder.getCard().setChecked(position == selected);

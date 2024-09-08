@@ -28,6 +28,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.VlessActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.ProxiesActivity"
             android:exported="false" />
 

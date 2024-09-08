@@ -14,4 +14,5 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="select">Select</string>
+    <string name="conflict_label">A proxy with this label already exists.</string>
 </resources>

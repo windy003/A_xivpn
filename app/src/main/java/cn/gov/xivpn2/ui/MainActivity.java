@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
@@ -24,6 +25,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.gson.Gson;
@@ -47,7 +49,7 @@ import cn.gov.xivpn2.xrayconfig.Outbound;
 
 public class MainActivity extends AppCompatActivity {
 
-    private FloatingActionButton fab;
+    private MaterialButton btn;
     private MaterialSwitch aSwitch;
     private TextView textView;
     private XiVPNService.XiVPNBinder binder;
@@ -96,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         textView.setText("");
+        SharedPreferences sp = getSharedPreferences("XIVPN", MODE_PRIVATE);
+        btn.setText(sp.getString("SELECTED_LABEL", "Freedom"));
     }
 
     @Override
@@ -110,15 +114,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // bind views
-        fab = findViewById(R.id.fab);
         textView = findViewById(R.id.textview);
         aSwitch = findViewById(R.id.vpn_switch);
-
-        // display xray version
-        TextView textViewVersion = findViewById(R.id.version);
-        textViewVersion.setText(LibXivpn.xivpn_version());
-
-        fab.hide();
+        btn = findViewById(R.id.btn);
 
         onCheckedChangeListener = (compoundButton, b) -> {
             if (b) {
@@ -155,6 +153,10 @@ public class MainActivity extends AppCompatActivity {
                 );
             }
         }
+
+        btn.setOnClickListener(v -> {
+            startActivity(new Intent(this, ProxiesActivity.class));
+        });
     }
 
     /**
@@ -183,9 +185,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.proxies) {
-            startActivity(new Intent(this, ProxiesActivity.class));
-        }
         return super.onOptionsItemSelected(item);
     }
 
