@@ -181,6 +181,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             holder.setText(input.getText());
             holder.setHint(input.getHint());
             holder.setHelperText(input.getHelperText());
+            holder.setContentDescription(input.getHint());
 
             holder.setOnTextChangedListener(() -> {
                 input.setText(holder.getText());
@@ -270,6 +271,10 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         public String getText() {
             return Objects.requireNonNull(editText.getText()).toString();
+        }
+
+        public void setContentDescription(String s) {
+            layout.setEndIconContentDescription(s);
         }
 
 

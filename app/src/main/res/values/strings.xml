@@ -15,4 +15,5 @@
     <string name="delete">Delete</string>
     <string name="select">Select</string>
     <string name="conflict_label">A proxy with this label already exists.</string>
+    <string name="label_help_text">Enter a custom label for the new proxy</string>
 </resources>
