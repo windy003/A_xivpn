@@ -18,8 +18,17 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
     @Override
     protected boolean validate(ProxyEditTextAdapter adapter) {
         return adapter.validate((k, v) -> {
-            if (k.equals("PORT") || k.equals("ADDRESS") || k.equals("UUID")) {
+            if (k.equals("ADDRESS") || k.equals("UUID")) {
                 return !v.isEmpty();
+            }
+            if (k.equals("PORT")) {
+                if (v.isEmpty()) return false;
+                try {
+                    int i = Integer.parseInt(v);
+                    return i <= 65535 && i >= 1;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
             }
             return true;
         });
@@ -27,7 +36,7 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
 
     @Override
     protected Type getType() {
-        return new TypeToken<Outbound<VmessSettings>>() { }.getType();
+        return new TypeToken<Outbound<VlessSettings>>() { }.getType();
     }
 
     @Override
@@ -69,7 +78,7 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
 
     @Override
     protected String getProtocolName() {
-        return "vmess";
+        return "vless";
     }
 
     @Override

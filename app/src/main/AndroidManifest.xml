@@ -35,6 +35,14 @@
             android:name=".ui.ProxiesActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.TrojanActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.WireguardActivity"
+            android:exported="false" />
+
         <service
             android:name=".XiVPNService"
             android:enabled="true"

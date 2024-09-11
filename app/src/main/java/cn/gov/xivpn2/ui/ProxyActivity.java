@@ -75,8 +75,10 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
 
         // initialize inputs
         initializeInputs(adapter);
-        adapter.addInput("NETWORK", "Network", Arrays.asList("tcp", "ws", "quic", "httpupgrade", "splithttp"));
-        adapter.addInput("SECURITY", "Security", Arrays.asList("none", "tls", "reality"));
+        if (hasStreamSettings()) {
+            adapter.addInput("NETWORK", "Network", Arrays.asList("tcp", "ws", "quic", "httpupgrade", "splithttp"));
+            adapter.addInput("SECURITY", "Security", Arrays.asList("none", "tls", "reality"));
+        }
 
         adapter.setOnInputChangedListener((k, v) -> {
             onInputChanged(adapter, k, v);
@@ -93,6 +95,13 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         }
     }
 
+    /**
+     * This method may be overridden to disable stream settings (network and security).
+     */
+    protected boolean hasStreamSettings() {
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -103,7 +112,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
 
             // validation
             if (validate(adapter)) {
-                Outbound<T> outbound = buildOutboundConfig();
+                Outbound<T> outbound = buildOutboundConfig(this.adapter);
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String json = gson.toJson(outbound);
                 Log.d(TAG, json);
@@ -145,12 +154,14 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
     /**
      * Build xray outbound object
      */
-    private Outbound<T> buildOutboundConfig() {
+    protected Outbound<T> buildOutboundConfig(ProxyEditTextAdapter adapter) {
         Outbound<T> outbound = new Outbound<>();
         outbound.protocol = getProtocolName();
-        outbound.streamSettings = new StreamSettings();
         outbound.settings = buildProtocolSettings(adapter);
 
+        if (!hasStreamSettings()) return outbound;
+
+        outbound.streamSettings = new StreamSettings();
         String network = this.adapter.getValue("NETWORK");
         outbound.streamSettings.network = network;
         if (network.equals("ws")) {
@@ -203,6 +214,8 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
     protected LinkedHashMap<String, String> decodeOutboundConfig(Outbound<T> outbound) {
         LinkedHashMap<String, String> initials = new LinkedHashMap<>();
 
+        if (!hasStreamSettings()) return initials;
+
         initials.put("NETWORK", outbound.streamSettings.network);
         if (outbound.streamSettings.network.equals("ws")) {
             initials.put("NETWORK_WS_PATH", outbound.streamSettings.wsSettings.path);
@@ -224,7 +237,9 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             initials.put("NETWORK_SPLITHTTP_MIN_POST_INTERVAL", outbound.streamSettings.splithttpSettings.scMinPostsIntervalMs);
         }
 
-        if (outbound.streamSettings.security.equals("tls")) {
+        if (outbound.streamSettings.security == null || outbound.streamSettings.security.isEmpty()) {
+
+        } else if (outbound.streamSettings.security.equals("tls")) {
             initials.put("SECURITY", "tls");
             initials.put("SECURITY_TLS_SNI", outbound.streamSettings.tlsSettings.serverName);
             initials.put("SECURITY_TLS_ALPN", String.join(",", outbound.streamSettings.tlsSettings.alpn));
@@ -254,6 +269,8 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
      * Called when user changes a configuration field
      */
     protected void onInputChanged(ProxyEditTextAdapter adapter, String key, String value) {
+        if (!hasStreamSettings()) return;
+
         if (key.equals("NETWORK")) {
             adapter.removeInputByPrefix("NETWORK_");
             if (value.equals("ws")) {

@@ -84,6 +84,10 @@ public class ProxiesActivity extends AppCompatActivity {
                         cls = VmessActivity.class;
                     } else if (proxy.protocol.equals("vless")) {
                         cls = VlessActivity.class;
+                    } else if (proxy.protocol.equals("trojan")) {
+                        cls = TrojanActivity.class;
+                    } else if (proxy.protocol.equals("wireguard")) {
+                        cls = WireguardActivity.class;
                     }
 
                     Intent intent = new Intent(this, cls);
@@ -140,7 +144,7 @@ public class ProxiesActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             this.finish();
-        } else if (item.getItemId() == R.id.shadowsocks || item.getItemId() == R.id.vmess) {
+        } else if (item.getItemId() == R.id.shadowsocks || item.getItemId() == R.id.vmess || item.getItemId() == R.id.vless || item.getItemId() == R.id.trojan || item.getItemId() == R.id.wireguard) {
 
             // add
 
@@ -165,6 +169,10 @@ public class ProxiesActivity extends AppCompatActivity {
                             cls = VmessActivity.class;
                         } else if (item.getItemId() == R.id.vless) {
                             cls = VlessActivity.class;
+                        } else if (item.getItemId() == R.id.trojan) {
+                            cls = TrojanActivity.class;
+                        } else if (item.getItemId() == R.id.wireguard) {
+                            cls = WireguardActivity.class;
                         }
 
                         Intent intent = new Intent(this, cls);

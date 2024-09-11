@@ -94,7 +94,13 @@ public class XiVPNService extends VpnService {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String xrayConfig = gson.toJson(config);
         Log.i(TAG, "xray config: " + xrayConfig);
-        LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.detachFd());
+        String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.detachFd());
+        if (!ret.isEmpty()) {
+            status = Status.DISCONNECTED;
+            if (listener != null) listener.onStatusChanged(status);
+            if (listener != null) listener.onMessage("ERROR: " + ret);
+            return;
+        }
 
         status = Status.CONNECTED;
         if (listener != null) listener.onStatusChanged(status);
