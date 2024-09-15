@@ -50,8 +50,10 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
         VlessUser user = new VlessUser();
         user.id = adapter.getValue("UUID");
         String flow = adapter.getValue("FLOW");
-        if (!flow.equals("None")) {
+        if (!flow.equals("none")) {
             user.flow = flow;
+        } else {
+            user.flow = "";
         }
         vnext.users.add(user);
 
@@ -68,7 +70,7 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
         hashMap.put("PORT", String.valueOf(vnext.port));
         String flow = vnext.users.get(0).flow;
         if (flow == null || flow.isEmpty()) {
-            hashMap.put("FLOW", "");
+            hashMap.put("FLOW", "none");
         } else {
             hashMap.put("FLOW", flow);
         }

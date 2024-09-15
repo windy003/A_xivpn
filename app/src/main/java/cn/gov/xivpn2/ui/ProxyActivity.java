@@ -14,14 +14,11 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -33,7 +30,6 @@ import cn.gov.xivpn2.xrayconfig.HttpUpgradeSettings;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.QuicSettings;
 import cn.gov.xivpn2.xrayconfig.RealitySettings;
-import cn.gov.xivpn2.xrayconfig.ShadowsocksSettings;
 import cn.gov.xivpn2.xrayconfig.SplitHttpSettings;
 import cn.gov.xivpn2.xrayconfig.StreamSettings;
 import cn.gov.xivpn2.xrayconfig.TLSSettings;
@@ -200,8 +196,8 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             outbound.streamSettings.security = "reality";
             outbound.streamSettings.realitySettings = new RealitySettings();
             outbound.streamSettings.realitySettings.shortId = adapter.getValue("SECURITY_REALITY_SHORTID");
-            outbound.streamSettings.realitySettings.fingerprint = adapter.getValue("SECURITY_TLS_FINGERPRINT");
-            outbound.streamSettings.realitySettings.serverName = adapter.getValue("SECURITY_TLS_SNI");
+            outbound.streamSettings.realitySettings.fingerprint = adapter.getValue("SECURITY_REALITY_FINGERPRINT");
+            outbound.streamSettings.realitySettings.serverName = adapter.getValue("SECURITY_REALITY_SNI");
             outbound.streamSettings.realitySettings.publicKey = adapter.getValue("SECURITY_REALITY_PUBLIC_KEY");
         }
 
