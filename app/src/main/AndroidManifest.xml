@@ -18,38 +18,34 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.XiVPN"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ui.SubscriptionsActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.ShadowsocksActivity"
             android:exported="false" />
-
         <activity
             android:name=".ui.VmessActivity"
             android:exported="false" />
-
         <activity
             android:name=".ui.VlessActivity"
             android:exported="false" />
-
         <activity
             android:name=".ui.ProxiesActivity"
             android:exported="false" />
-
         <activity
             android:name=".ui.TrojanActivity"
             android:exported="false" />
-
         <activity
             android:name=".ui.WireguardActivity"
             android:exported="false" />
 
         <service
-            android:name=".XiVPNService"
+            android:name=".service.XiVPNService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse"
             android:permission="android.permission.BIND_VPN_SERVICE">
-
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="vpn" />
@@ -59,15 +55,20 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="specialUse"
+            tools:node="merge" />
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>

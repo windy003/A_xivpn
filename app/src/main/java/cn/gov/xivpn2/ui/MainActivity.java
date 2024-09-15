@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
@@ -26,21 +25,16 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import com.google.gson.ToNumberPolicy;
-import com.google.gson.ToNumberStrategy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
-import cn.gov.xivpn2.LibXivpn;
 import cn.gov.xivpn2.R;
-import cn.gov.xivpn2.XiVPNService;
+import cn.gov.xivpn2.service.XiVPNService;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
 import cn.gov.xivpn2.xrayconfig.Config;
@@ -185,6 +179,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if (item.getItemId() == R.id.subscriptions) {
+            startActivity(new Intent(this, SubscriptionsActivity.class));
+        }
+
         return super.onOptionsItemSelected(item);
     }
 

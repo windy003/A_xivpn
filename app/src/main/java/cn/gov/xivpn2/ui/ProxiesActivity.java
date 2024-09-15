@@ -100,6 +100,19 @@ public class ProxiesActivity extends AppCompatActivity {
 
                     // delete
                     AppDatabase.getInstance().proxyDao().delete(proxy.label, proxy.subscription);
+
+                    // check if selected subscription is deleted
+                    // if so, set to default
+                    SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
+                    String selectedLabel = sp.getString("SELECTED_LABEL", "Freedom");
+                    String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
+                    if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
+                        SharedPreferences.Editor edit = sp.edit();
+                        edit.putString("SELECTED_LABEL", "Freedom");
+                        edit.putString("SELECTED_SUBSCRIPTION", "none");
+                        edit.commit();
+                    }
+
                     refresh();
 
                 }

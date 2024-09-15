@@ -34,4 +34,8 @@ public interface ProxyDao {
     @Query("DELETE FROM proxy WHERE label = :label AND subscription = :subscription")
     void delete(String label, String subscription);
 
+    @Query("DELETE FROM proxy WHERE subscription = :subscription")
+    void deleteBySubscription(String subscription);
+
+
 }

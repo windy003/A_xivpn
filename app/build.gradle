@@ -10,7 +10,7 @@ android {
         applicationId "cn.gov.xivpn2"
         minSdk 28
         targetSdk 34
-        versionCode 2
+        versionCode 3
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -40,4 +40,6 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    implementation libs.work.runtime
+    implementation libs.okhttp
 }
