@@ -24,9 +24,13 @@ import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -37,10 +41,21 @@ import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
 import cn.gov.xivpn2.database.Subscription;
+import cn.gov.xivpn2.xrayconfig.HttpUpgradeSettings;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksServerSettings;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksSettings;
+import cn.gov.xivpn2.xrayconfig.SplitHttpSettings;
 import cn.gov.xivpn2.xrayconfig.StreamSettings;
+import cn.gov.xivpn2.xrayconfig.TLSSettings;
+import cn.gov.xivpn2.xrayconfig.TrojanServerSettings;
+import cn.gov.xivpn2.xrayconfig.TrojanSettings;
+import cn.gov.xivpn2.xrayconfig.VmessServerSettings;
+import cn.gov.xivpn2.xrayconfig.VmessSettings;
+import cn.gov.xivpn2.xrayconfig.VmessShare;
+import cn.gov.xivpn2.xrayconfig.VmessUser;
+import cn.gov.xivpn2.xrayconfig.WsSettings;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -95,7 +110,7 @@ public class SubscriptionWork extends Worker {
 
                 Notification notification = new Notification.Builder(getApplicationContext(), "XiVPNSubscriptions")
                         .setContentTitle(getApplicationContext().getString(R.string.subscription_updated) + subscription.label)
-                        .setSmallIcon(R.drawable.baseline_error_24)
+                        .setSmallIcon(R.drawable.outline_info_24)
                         .build();
                 getApplicationContext().getSystemService(NotificationManager.class).notify(NotificationID.getID(), notification);
 
@@ -134,7 +149,7 @@ public class SubscriptionWork extends Worker {
      *
      * @param text base64 encoded, one line per proxy
      */
-    private void parse(String text, String label) throws MalformedURLException, UnsupportedEncodingException {
+    private void parse(String text, String label) throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
         // decode base64
         String textDecoded = new String(Base64.decode(text, Base64.DEFAULT), StandardCharsets.UTF_8);
 
@@ -145,8 +160,17 @@ public class SubscriptionWork extends Worker {
 
             Proxy proxy = null;
 
-            if (line.startsWith("ss://")) {
-                proxy = parseShadowsocks(line);
+            try {
+                if (line.startsWith("ss://")) {
+                    proxy = parseShadowsocks(line);
+                } else if (line.startsWith("vmess://")) {
+                    proxy = parseVmess(line);
+                } else if (line.startsWith("trojan://")) {
+                    proxy = parseTrojan(line);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "parse " + label + " " + line, e);
+                throw e;
             }
 
             if (proxy == null) continue;
@@ -217,5 +241,116 @@ public class SubscriptionWork extends Worker {
         proxy.config = new Gson().toJson(outbound);
 
         return proxy;
+    }
+
+    private Proxy parseVmess(String line) {
+        if (!line.startsWith("vmess://")) {
+            throw new IllegalArgumentException("invalid vmess " + line);
+        }
+
+        line = line.substring(8);
+
+        String json = new String(Base64.decode(line, Base64.URL_SAFE), StandardCharsets.UTF_8);
+
+        Gson gson = new GsonBuilder().create();
+        VmessShare vmessShare = gson.fromJson(json, VmessShare.class);
+
+        Proxy proxy = new Proxy();
+        proxy.label = vmessShare.ps;
+        proxy.protocol = "vmess";
+
+        Outbound<VmessSettings> outbound = new Outbound<>();
+        outbound.protocol = "vmess";
+        outbound.settings = new VmessSettings();
+
+        VmessServerSettings server = new VmessServerSettings();
+        outbound.settings.vnext.add(server);
+        server.address = vmessShare.add;
+        server.port = Integer.parseInt(vmessShare.port);
+
+        VmessUser vmessUser = new VmessUser();
+        vmessUser.security = vmessShare.security;
+        vmessUser.id = vmessShare.id;
+        server.users.add(vmessUser);
+
+        outbound.streamSettings = new StreamSettings();
+        outbound.streamSettings.network = vmessShare.network;
+        if (vmessShare.network.equals("ws")) {
+            outbound.streamSettings.wsSettings = new WsSettings();
+            outbound.streamSettings.wsSettings.path = vmessShare.path;
+            outbound.streamSettings.wsSettings.host = vmessShare.host;
+        }
+        if (vmessShare.network.equals("httpupgrade")) {
+            outbound.streamSettings.httpupgradeSettings = new HttpUpgradeSettings();
+            outbound.streamSettings.httpupgradeSettings.host = vmessShare.host;
+            outbound.streamSettings.httpupgradeSettings.path = vmessShare.path;
+        }
+        if (vmessShare.network.equals("splithttp")) {
+            outbound.streamSettings.splithttpSettings = new SplitHttpSettings();
+            outbound.streamSettings.httpupgradeSettings.host = vmessShare.host;
+            outbound.streamSettings.httpupgradeSettings.path = vmessShare.path;
+        }
+        if (!vmessShare.type.equals("none")) {
+            throw new IllegalArgumentException("unsupported type " + vmessShare.type);
+        }
+        outbound.streamSettings.security = vmessShare.tls;
+        if (outbound.streamSettings.security.equals("tls")) {
+            outbound.streamSettings.tlsSettings = new TLSSettings();
+            outbound.streamSettings.tlsSettings.allowInsecure = false;
+            outbound.streamSettings.tlsSettings.serverName = vmessShare.sni;
+            outbound.streamSettings.tlsSettings.alpn = vmessShare.alpn.split(",");
+            outbound.streamSettings.tlsSettings.fingerprint = vmessShare.fingerprint;
+        }
+
+        proxy.config = gson.toJson(outbound);
+
+        return proxy;
+    }
+
+    private Proxy parseTrojan(String line) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+        if (!line.startsWith("trojan://")) {
+            throw new IllegalArgumentException("invalid trojan " + line);
+        }
+
+        URI uri = new URI(line);
+        Map<String, String> query = splitQuery(uri.getRawQuery());
+
+        Proxy proxy = new Proxy();
+        proxy.label = URLDecoder.decode(uri.getFragment(), "UTF-8");
+        proxy.protocol = "trojan";
+
+        Outbound<TrojanSettings> outbound = new Outbound<>();
+        outbound.protocol = "trojan";
+        outbound.settings = new TrojanSettings();
+
+        TrojanServerSettings trojanServerSettings = new TrojanServerSettings();
+        trojanServerSettings.address = uri.getHost();
+        trojanServerSettings.port = uri.getPort();
+        trojanServerSettings.password = uri.getUserInfo();
+        outbound.settings.servers.add(trojanServerSettings);
+
+        outbound.streamSettings = new StreamSettings();
+        outbound.streamSettings.network = "tcp";
+        outbound.streamSettings.security = "tls";
+        outbound.streamSettings.tlsSettings = new TLSSettings();
+        outbound.streamSettings.tlsSettings.allowInsecure = !query.containsKey("allowInsecure") && query.get("allowInsecure").equals("1");
+        outbound.streamSettings.tlsSettings.serverName = query.getOrDefault("sni", uri.getHost());
+        outbound.streamSettings.tlsSettings.alpn = !query.containsKey("alpn") ? new String[]{"h2", "http/1.1"} : query.get("alpn").split(",");
+        outbound.streamSettings.tlsSettings.fingerprint = query.get("fp");
+
+        proxy.config = new Gson().toJson(outbound);
+
+        return proxy;
+
+    }
+
+    public static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
+        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+        }
+        return query_pairs;
     }
 }

@@ -78,6 +78,11 @@ public class SubscriptionsActivity extends AppCompatActivity {
                             return;
                         }
 
+                        if (AppDatabase.getInstance().subscriptionDao().findByLabel(labelEditText.getText().toString()) != null) {
+                            Toast.makeText(this, getString(R.string.subscription_already_exists), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
                         Subscription subscription = new Subscription();
                         subscription.label = labelEditText.getText().toString();
                         subscription.url = urlEditText.getText().toString();
