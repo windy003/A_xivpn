@@ -1,7 +1,7 @@
 package cn.gov.xivpn2;
 
 public class NotificationID {
-    private static int id = 0;
+    private static int id = 1;
 
     public synchronized static int getID() {
         int i = id;

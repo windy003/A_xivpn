@@ -53,6 +53,14 @@ public class XiVPNService extends VpnService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent.getAction().equals("cn.gov.xivpn2.START")) {
+            Log.i(TAG, "start foreground");
+            // start foreground service
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "XiVPNService");
+            builder.setContentText("XiVPN is running");
+            builder.setSmallIcon(R.drawable.baseline_vpn_key_24);
+            startForeground(NotificationID.getID(), builder.build());
+        }
         return Service.START_NOT_STICKY;
     }
 
@@ -61,12 +69,6 @@ public class XiVPNService extends VpnService {
 
         status = Status.CONNECTING;
         if (listener != null) listener.onStatusChanged(status);
-
-        // start foreground service
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "XiVPNService");
-        builder.setContentText("XiVPN is running");
-        builder.setSmallIcon(R.drawable.baseline_vpn_key_24);
-        startForeground(NotificationID.getID(), builder.build());
 
         // establish vpn
         Builder vpnBuilder = new Builder();
