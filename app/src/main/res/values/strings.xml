@@ -21,5 +21,7 @@
     <string name="empty_label_or_url">Label and empty can not be empty.</string>
     <string name="update">Update</string>
     <string name="refresh">Refresh</string>
-    <string name="subscription_updating">Updating subscriptions</string>
+    <string name="subscription_updating">Updating subscriptions…</string>
+    <string name="subscription_error">"Could not update subscription: "</string>
+    <string name="subscription_updated">"Subscription updated: "</string>
 </resources>

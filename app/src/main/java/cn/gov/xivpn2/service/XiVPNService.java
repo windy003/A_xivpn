@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import cn.gov.xivpn2.LibXivpn;
+import cn.gov.xivpn2.NotificationID;
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.xrayconfig.Config;
 
@@ -65,7 +66,7 @@ public class XiVPNService extends VpnService {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "XiVPNService");
         builder.setContentText("XiVPN is running");
         builder.setSmallIcon(R.drawable.baseline_vpn_key_24);
-        startForeground(1, builder.build());
+        startForeground(NotificationID.getID(), builder.build());
 
         // establish vpn
         Builder vpnBuilder = new Builder();

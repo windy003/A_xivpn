@@ -30,11 +30,14 @@ public class MyApplication extends Application {
         System.loadLibrary("xivpn");
 
         // notification
-        NotificationChannel channel = new NotificationChannel("XiVPNService", "Xi Vpn Service", NotificationManager.IMPORTANCE_LOW);
-        channel.setDescription("Xi Vpn Background Service");
+        NotificationChannel channelVpnService = new NotificationChannel("XiVPNService", "Xi VPN Service", NotificationManager.IMPORTANCE_DEFAULT);
+        channelVpnService.setDescription("Xi VPN Background Service");
+        NotificationChannel channelSubscriptions = new NotificationChannel("XiVPNSubscriptions", "Xi VPN Subscription Update", NotificationManager.IMPORTANCE_DEFAULT);
+        channelSubscriptions.setDescription("Xi VPN Subscription Update Worker");
 
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
+        notificationManager.createNotificationChannel(channelVpnService);
+        notificationManager.createNotificationChannel(channelSubscriptions);
 
         // database
         AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "xivpn")

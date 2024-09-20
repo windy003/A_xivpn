@@ -1,6 +1,7 @@
 package cn.gov.xivpn2.service;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ServiceInfo;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.gov.xivpn2.NotificationID;
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
@@ -44,7 +46,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class SubscriptionWork extends Worker {
-
     private static final String TAG = "SubscriptionWorker";
 
     public SubscriptionWork(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -58,15 +59,16 @@ public class SubscriptionWork extends Worker {
 
         // start foreground service
 
-        Notification notification = new Notification.Builder(getApplicationContext(), "XiVPNService")
+        Notification foregroundNotification = new Notification.Builder(getApplicationContext(), "XiVPNService")
                 .setContentText(getApplicationContext().getString(R.string.subscription_updating))
+                .setOngoing(true)
                 .setSmallIcon(R.drawable.baseline_refresh_24)
                 .build();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            setForegroundAsync(new ForegroundInfo(2, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE));
+            setForegroundAsync(new ForegroundInfo(NotificationID.getID(), foregroundNotification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE));
         } else {
-            setForegroundAsync(new ForegroundInfo(2, notification));
+            setForegroundAsync(new ForegroundInfo(NotificationID.getID(), foregroundNotification));
         }
 
         OkHttpClient client = new OkHttpClient();
@@ -87,30 +89,40 @@ public class SubscriptionWork extends Worker {
                 // delete old proxies
                 AppDatabase.getInstance().proxyDao().deleteBySubscription(subscription.label);
 
+                // parse subscription and add proxies
                 String body = response.body().string();
+                parse(body, subscription.label);
 
-                try {
-                    // parse subscription and add proxies
-                    parse(body, subscription.label);
-                } catch (Exception e) {
-                    Log.e(TAG, "parse " + subscription.label, e);
-                }
+                Notification notification = new Notification.Builder(getApplicationContext(), "XiVPNSubscriptions")
+                        .setContentTitle(getApplicationContext().getString(R.string.subscription_updated) + subscription.label)
+                        .setSmallIcon(R.drawable.baseline_error_24)
+                        .build();
+                getApplicationContext().getSystemService(NotificationManager.class).notify(NotificationID.getID(), notification);
 
-                // check if selected subscription is deleted
-                // if so, set to default
-                SharedPreferences sp = getApplicationContext().getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-                String selectedLabel = sp.getString("SELECTED_LABEL", "Freedom");
-                String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
-                if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
-                    SharedPreferences.Editor edit = sp.edit();
-                    edit.putString("SELECTED_LABEL", "Freedom");
-                    edit.putString("SELECTED_SUBSCRIPTION", "none");
-                    edit.apply();
-                }
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "update " + subscription.label, e);
+
+                // post error message
+                Notification notification = new Notification.Builder(getApplicationContext(), "XiVPNSubscriptions")
+                        .setContentTitle(getApplicationContext().getString(R.string.subscription_error) + subscription.label)
+                        .setContentText(e.getMessage())
+                        .setSmallIcon(R.drawable.baseline_error_24)
+                        .build();
+                getApplicationContext().getSystemService(NotificationManager.class).notify(NotificationID.getID(), notification);
             }
+        }
+
+        // check if selected subscription is deleted
+        // if so, set to default
+        SharedPreferences sp = getApplicationContext().getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
+        String selectedLabel = sp.getString("SELECTED_LABEL", "Freedom");
+        String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
+        if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
+            SharedPreferences.Editor edit = sp.edit();
+            edit.putString("SELECTED_LABEL", "Freedom");
+            edit.putString("SELECTED_SUBSCRIPTION", "none");
+            edit.apply();
         }
 
         Log.i(TAG, "doWork finish");
@@ -122,7 +134,7 @@ public class SubscriptionWork extends Worker {
      *
      * @param text base64 encoded, one line per proxy
      */
-    private void parse(String text, String label) {
+    private void parse(String text, String label) throws MalformedURLException, UnsupportedEncodingException {
         // decode base64
         String textDecoded = new String(Base64.decode(text, Base64.DEFAULT), StandardCharsets.UTF_8);
 
@@ -134,12 +146,7 @@ public class SubscriptionWork extends Worker {
             Proxy proxy = null;
 
             if (line.startsWith("ss://")) {
-                try {
-                    proxy = parseShadowsocks(line);
-                } catch (MalformedURLException | UnsupportedEncodingException e) {
-                    Log.e(TAG, "parse " + line, e);
-                    continue;
-                }
+                proxy = parseShadowsocks(line);
             }
 
             if (proxy == null) continue;
@@ -160,7 +167,7 @@ public class SubscriptionWork extends Worker {
     /**
      * Parse shadowsocks URI
      */
-    private Proxy parseShadowsocks(String line) throws MalformedURLException, UnsupportedEncodingException {
+    private Proxy parseShadowsocks(String line) throws UnsupportedEncodingException {
         Proxy proxy = new Proxy();
         proxy.protocol = "shadowsocks";
 
