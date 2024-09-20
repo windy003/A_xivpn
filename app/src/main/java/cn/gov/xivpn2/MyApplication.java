@@ -74,7 +74,7 @@ public class MyApplication extends Application {
         WorkManager workManager = WorkManager.getInstance(this);
         workManager.enqueueUniquePeriodicWork(
                 "SUBSCRIPTION",
-                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 new PeriodicWorkRequest.Builder(SubscriptionWork.class, Duration.ofHours(1))
                         .build()
         );
