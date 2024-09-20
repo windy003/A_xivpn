@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         // bind views
         textView = findViewById(R.id.textview);
         aSwitch = findViewById(R.id.vpn_switch);
-        btn = findViewById(R.id.btn);
+        btn = findViewById(R.id.btn_report);
 
         onCheckedChangeListener = (compoundButton, b) -> {
             if (b) {

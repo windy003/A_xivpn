@@ -3,6 +3,7 @@ package cn.gov.xivpn2;
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,8 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,11 +25,28 @@ import java.util.concurrent.Executors;
 
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.service.SubscriptionWork;
+import cn.gov.xivpn2.ui.CrashActivity;
 
 public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // crash
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            Log.e("CRASH", "uncaught exception handler", throwable);
+
+            StringWriter sw = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(sw));
+            String exceptionAsString = sw.toString();
+
+            Intent intent = new Intent(this, CrashActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("EXCEPTION", exceptionAsString);
+            startActivity(intent);
+            System.exit(1);
+        });
+
         System.loadLibrary("xivpn");
 
         // notification
@@ -58,5 +78,6 @@ public class MyApplication extends Application {
                 new PeriodicWorkRequest.Builder(SubscriptionWork.class, Duration.ofHours(1))
                         .build()
         );
+
     }
 }

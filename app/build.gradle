@@ -29,6 +29,10 @@ android {
 
     packagingOptions {
     }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {

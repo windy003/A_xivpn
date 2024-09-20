@@ -20,6 +20,9 @@
         android:theme="@style/Theme.XiVPN"
         tools:targetApi="31">
         <activity
+            android:name=".ui.CrashActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.SubscriptionsActivity"
             android:exported="false" />
         <activity
@@ -47,12 +50,10 @@
             android:exported="false"
             android:foregroundServiceType="systemExempted"
             android:permission="android.permission.BIND_VPN_SERVICE">
-
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="shortService"

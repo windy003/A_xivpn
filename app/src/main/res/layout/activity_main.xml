@@ -28,7 +28,7 @@
         android:layout_margin="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_report" />
 
     <TextView
         android:id="@+id/version"
@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn"
+        android:id="@+id/btn_report"
         android:text="@string/select_outbound"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
