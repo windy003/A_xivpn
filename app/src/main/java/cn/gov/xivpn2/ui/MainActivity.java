@@ -3,6 +3,7 @@ package cn.gov.xivpn2.ui;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -10,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
@@ -25,6 +27,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -154,6 +157,25 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(v -> {
             startActivity(new Intent(this, ProxiesActivity.class));
         });
+
+        // show privacy policy
+        if (!getSharedPreferences("XIVPN", MODE_PRIVATE).getBoolean("NEVER_SHOW_PRIVACY_POLICY", false)) {
+            TextView textView = new TextView(this);
+            textView.setTextIsSelectable(true);
+            textView.setText(Html.fromHtml(getString(R.string.privacy_policy_content), Html.FROM_HTML_MODE_COMPACT));
+
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.privacy_policy)
+                    .setView(textView)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.ok, null)
+                    .setNeutralButton(R.string.never_show_again, (dialog, which) -> {
+                        SharedPreferences sp = getSharedPreferences("XIVPN", MODE_PRIVATE);
+                        sp.edit().putBoolean("NEVER_SHOW_PRIVACY_POLICY", true).apply();
+                    })
+                    .show();
+        }
+
     }
 
     /**

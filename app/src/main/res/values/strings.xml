@@ -26,4 +26,7 @@
     <string name="subscription_updated">"Subscription updated: "</string>
     <string name="report_bug_github">Report bug on Github</string>
     <string name="subscription_already_exists">Subscription with the same label already exists</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_content"><![CDATA[<strong>No Collection of Personal Data</strong><br>We do not collect, store, or process any personal information or data related to your use of the App, including but not limited to IP addresses, browsing activity, or server configurations.<br><br><strong>No Proxy Servers Provided</strong><br>The App is a graphical user interface (GUI) client for the Xray core. We do not provide any proxy servers or offer VPN services directly. Users have full responsibility for configuring their own servers and connections through the App, ensuring privacy and control over their network setup.<br><br><strong>Learn more:</strong> https://exclude0122.github.io/docs/privacy-policy.html]]></string>
+    <string name="never_show_again">Neve show this again</string>
 </resources>
