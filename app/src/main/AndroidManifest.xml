@@ -20,6 +20,12 @@
         android:theme="@style/Theme.XiVPN"
         tools:targetApi="31">
         <activity
+            android:name=".ui.LicensesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.PreferenceActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.CrashActivity"
             android:exported="false" />
         <activity

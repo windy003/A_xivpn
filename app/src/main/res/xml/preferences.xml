@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        app:key="privacy_policy"
+        app:title="@string/privacy_policy" />
+
+    <Preference
+        app:key="feedback"
+        app:title="@string/feedback"
+        app:summary="@string/feedback_summary"/>
+
+    <Preference
+        app:key="source_code"
+        app:title="@string/source_code"
+        app:summary="@string/source_code_summary"/>
+
+    <Preference
+        app:key="open_source_licenses"
+        app:title="@string/open_source_licenses"/>
+
+</PreferenceScreen>

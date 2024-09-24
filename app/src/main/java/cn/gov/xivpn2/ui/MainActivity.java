@@ -207,6 +207,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (item.getItemId() == R.id.subscriptions) {
             startActivity(new Intent(this, SubscriptionsActivity.class));
+        } else if (item.getItemId() == R.id.settings) {
+            startActivity(new Intent(this, PreferenceActivity.class));
         }
 
         return super.onOptionsItemSelected(item);

@@ -9,5 +9,12 @@
         android:icon="@drawable/baseline_cloud_24"
         android:title="@string/subscriptions" />
 
+    <item
+        app:showAsAction="ifRoom"
+        android:id="@+id/settings"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="@string/settings" />
+
+
 
 </menu>
