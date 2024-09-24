@@ -22,7 +22,7 @@ public interface ProxyDao {
     @Insert()
     void add(Proxy proxy);
 
-    @Query("INSERT OR IGNORE INTO proxy (label, protocol, subscription, config) VALUES ('Freedom', 'freedom', 'none', '{\"protocol\": \"freedom\"}')")
+    @Query("INSERT OR IGNORE INTO proxy (label, protocol, subscription, config) VALUES ('No Proxy (Bypass Mode)', 'freedom', 'none', '{\"protocol\": \"freedom\"}')")
     void addFreedom();
 
     @Query("SELECT count(*) FROM proxy WHERE label = :label AND subscription = :subscription LIMIT 1")
