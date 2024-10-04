@@ -40,7 +40,7 @@ jobs:
         run: |
           mkdir ./sign
           echo $ENCODED_STRING > sign/keystore-b64.txt
-          base64 -d keystore-b64.txt > sign/keystore.jks
+          base64 -d ./sign/keystore-b64.txt > sign/keystore.jks
 
       - name: Build APK
         run: ./gradlew assembleRelease
