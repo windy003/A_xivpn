@@ -1,0 +1,64 @@
+name: Build
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Download Native Binary
+        run: |
+          wget -o ./app/src/main/jniLibs/arm64-v8a/libxivpn.so https://github.com/Exclude0122/libxivpn/releases/latest/download/libxivpn_arm64.so
+          wget -o ./app/src/main/jniLibs/x86_64/libxivpn.so https://github.com/Exclude0122/libxivpn/releases/latest/download/libxivpn_x86_64.so
+          sha256sum ./app/src/main/jniLibs/arm64-v8a/libxivpn.so
+          sha256sum ./app/src/main/jniLibs/x86_64/libxivpn.so
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decode Keystore
+        env:
+          ENCODED_STRING: ${{ secrets.KEYSTORE_BASE_64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEYSTORE_ALIAS: ${{ secrets.RELEASE_KEYSTORE_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+        run: |
+          echo $ENCODED_STRING > sign/keystore-b64.txt
+          base64 -d keystore-b64.txt > sign/keystore.jks
+
+      - name: Build APK
+        run: ./gradlew assembleRelease
+
+      - name: Get release file apk path
+        id: releaseApk
+        run: echo "apkfile=$(find app/build/outputs/apk/release/*.apk)" >> $GITHUB_OUTPUT
+
+      - name: Calculate sha256
+        run: |
+          sha256sum ${{ steps.releaseApk.outputs.apkfile }} > sha256.txt
+
+      - name: Upload APK to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release.apk
+          path: ${{ steps.releaseApk.outputs.apkfile }}
+
+      - name: Upload SHA256 to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: sha256.txt
+          path: sha256.txt
