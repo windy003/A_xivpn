@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceFragmentCompat;
 
+import cn.gov.xivpn2.LibXivpn;
 import cn.gov.xivpn2.R;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -35,6 +36,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             startActivity(new Intent(requireContext(), LicensesActivity.class));
             return true;
         });
+
+        findPreference("xray_version").setSummary(LibXivpn.xivpn_version());
     }
 
     private void openUrl(String url) {

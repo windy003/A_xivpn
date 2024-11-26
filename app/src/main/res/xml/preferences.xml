@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
         app:key="privacy_policy"
@@ -7,16 +8,21 @@
 
     <Preference
         app:key="feedback"
-        app:title="@string/feedback"
-        app:summary="@string/feedback_summary"/>
+        app:summary="@string/feedback_summary"
+        app:title="@string/feedback" />
 
     <Preference
         app:key="source_code"
-        app:title="@string/source_code"
-        app:summary="@string/source_code_summary"/>
+        app:summary="@string/source_code_summary"
+        app:title="@string/source_code" />
 
     <Preference
         app:key="open_source_licenses"
-        app:title="@string/open_source_licenses"/>
+        app:title="@string/open_source_licenses" />
+
+    <Preference
+        app:key="xray_version"
+        android:title="@string/xray_version"
+        app:summary="" />
 
 </PreferenceScreen>
