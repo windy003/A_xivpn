@@ -14,6 +14,8 @@ import androidx.core.app.NotificationCompat;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
+
 import cn.gov.xivpn2.LibXivpn;
 import cn.gov.xivpn2.NotificationID;
 import cn.gov.xivpn2.R;
@@ -64,8 +66,8 @@ public class XiVPNService extends VpnService {
         return Service.START_NOT_STICKY;
     }
 
-    public synchronized void startVPN(Config config) {
-        if (status != Status.DISCONNECTED) return;
+    public synchronized boolean startVPN(Config config) {
+        if (status != Status.DISCONNECTED) return false;
 
         status = Status.CONNECTING;
         if (listener != null) listener.onStatusChanged(status);
@@ -95,8 +97,16 @@ public class XiVPNService extends VpnService {
 
         if (!ret.isEmpty()) {
             stopVPN();
+            try {
+                fileDescriptor.close();
+            } catch (IOException e) {
+                Log.e(TAG, "error stop vpn close", e);
+            }
             if (listener != null) listener.onMessage("ERROR: " + ret);
+            return false;
         }
+
+        return true;
     }
 
     public synchronized void stopVPN() {
