@@ -11,30 +11,20 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.ForegroundInfo;
-import androidx.work.WorkRequest;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
-import androidx.work.impl.model.WorkSpec;
 
-import com.google.common.net.PercentEscaper;
-import com.google.common.net.UrlEscapers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import cn.gov.xivpn2.NotificationID;
 import cn.gov.xivpn2.R;
@@ -45,7 +35,7 @@ import cn.gov.xivpn2.xrayconfig.HttpUpgradeSettings;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksServerSettings;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksSettings;
-import cn.gov.xivpn2.xrayconfig.SplitHttpSettings;
+import cn.gov.xivpn2.xrayconfig.XHttpSettings;
 import cn.gov.xivpn2.xrayconfig.StreamSettings;
 import cn.gov.xivpn2.xrayconfig.TLSSettings;
 import cn.gov.xivpn2.xrayconfig.TrojanServerSettings;
@@ -55,7 +45,6 @@ import cn.gov.xivpn2.xrayconfig.VmessSettings;
 import cn.gov.xivpn2.xrayconfig.VmessShare;
 import cn.gov.xivpn2.xrayconfig.VmessUser;
 import cn.gov.xivpn2.xrayconfig.WsSettings;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -86,18 +75,29 @@ public class SubscriptionWork extends Worker {
             setForegroundAsync(new ForegroundInfo(NotificationID.getID(), foregroundNotification));
         }
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Log.e(TAG, "sleep", e);
+            return Result.success();
+        }
+
         OkHttpClient client = new OkHttpClient();
         for (Subscription subscription : AppDatabase.getInstance().subscriptionDao().findAll()) {
 
             // update subscription
 
-            Log.i(TAG, subscription.label + " " + subscription.url);
+            Log.i(TAG, "begin update: " + subscription.label + ", " + subscription.url);
 
-            Request request = new Request.Builder()
-                    .url(subscription.url)
-                    .build();
+            Response response = null;
+            try {
 
-            try (Response response = client.newCall(request).execute()) {
+                Request request = new Request.Builder()
+                        .url(subscription.url)
+                        .build();
+
+                response = client.newCall(request).execute();
+
 
                 if (response.body() == null) continue;
 
@@ -114,18 +114,28 @@ public class SubscriptionWork extends Worker {
                         .build();
                 getApplicationContext().getSystemService(NotificationManager.class).notify(NotificationID.getID(), notification);
 
-
             } catch (Exception e) {
+
                 Log.e(TAG, "update " + subscription.label, e);
 
                 // post error message
                 Notification notification = new Notification.Builder(getApplicationContext(), "XiVPNSubscriptions")
                         .setContentTitle(getApplicationContext().getString(R.string.subscription_error) + subscription.label)
-                        .setContentText(e.getMessage())
+                        .setContentText(e.getClass().getSimpleName() + ": " + e.getMessage())
                         .setSmallIcon(R.drawable.baseline_error_24)
                         .build();
                 getApplicationContext().getSystemService(NotificationManager.class).notify(NotificationID.getID(), notification);
+
+            } finally {
+                if (response != null) {
+                    try {
+                        response.close();
+                    } catch (Exception e) {
+                        Log.e(TAG, "close response", e);
+                    }
+                }
             }
+
         }
 
         // check if selected subscription is deleted
@@ -170,7 +180,6 @@ public class SubscriptionWork extends Worker {
                 }
             } catch (Exception e) {
                 Log.e(TAG, "parse " + label + " " + line, e);
-                throw e;
             }
 
             if (proxy == null) continue;
@@ -195,18 +204,13 @@ public class SubscriptionWork extends Worker {
         Proxy proxy = new Proxy();
         proxy.protocol = "shadowsocks";
 
-        Pattern pattern = Pattern.compile("^ss:\\/\\/([0-9A-Za-z-_%:]+)@([\\w\\.-]+):(\\d+)\\/?(?:\\?([\\w-=\\&]+))?(?:#([\\w-%\\.]+))?$");
-        Matcher matcher = pattern.matcher(line);
+        URI uri = URI.create(line);
 
-        if (!matcher.find()) {
-            throw new IllegalArgumentException("invalid ss " + line);
-        }
-
-        String userInfo = matcher.group(1);
-        String hostname = matcher.group(2);
-        String port = matcher.group(3);
-        String plugin = matcher.group(4);
-        String label = matcher.group(5);
+        String userInfo = uri.getRawUserInfo();
+        String hostname = uri.getHost();
+        String port = String.valueOf(uri.getPort());
+        String plugin = uri.getRawQuery();
+        String label = uri.getRawFragment();
 
         Outbound<ShadowsocksSettings> outbound = new Outbound<>();
         outbound.settings = new ShadowsocksSettings();
@@ -286,11 +290,11 @@ public class SubscriptionWork extends Worker {
             outbound.streamSettings.httpupgradeSettings.path = vmessShare.path;
         }
         if (vmessShare.network.equals("splithttp")) {
-            outbound.streamSettings.splithttpSettings = new SplitHttpSettings();
+            outbound.streamSettings.splithttpSettings = new XHttpSettings();
             outbound.streamSettings.httpupgradeSettings.host = vmessShare.host;
             outbound.streamSettings.httpupgradeSettings.path = vmessShare.path;
         }
-        if (!vmessShare.type.equals("none")) {
+        if (!vmessShare.type.equals("none") && !vmessShare.type.equals("auto") && !vmessShare.type.isEmpty()) {
             throw new IllegalArgumentException("unsupported type " + vmessShare.type);
         }
         outbound.streamSettings.security = vmessShare.tls;

@@ -1,5 +1,6 @@
 package cn.gov.xivpn2.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -7,6 +8,7 @@ import android.view.MenuItem;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -14,13 +16,18 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
@@ -30,10 +37,11 @@ import cn.gov.xivpn2.xrayconfig.HttpUpgradeSettings;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.QuicSettings;
 import cn.gov.xivpn2.xrayconfig.RealitySettings;
-import cn.gov.xivpn2.xrayconfig.SplitHttpSettings;
 import cn.gov.xivpn2.xrayconfig.StreamSettings;
 import cn.gov.xivpn2.xrayconfig.TLSSettings;
 import cn.gov.xivpn2.xrayconfig.WsSettings;
+import cn.gov.xivpn2.xrayconfig.XHttpSettings;
+import cn.gov.xivpn2.xrayconfig.XHttpStream;
 
 public abstract class ProxyActivity<T> extends AppCompatActivity {
 
@@ -45,6 +53,9 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
     private String label;
     private String subscription;
     private String config;
+    private boolean inline;
+
+    private String xhttpDownload = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +71,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         label = getIntent().getStringExtra("LABEL");
         subscription = getIntent().getStringExtra("SUBSCRIPTION");
         config = getIntent().getStringExtra("CONFIG");
+        inline = getIntent().getBooleanExtra("INLINE", false);
 
         getSupportActionBar().setTitle(label);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -72,9 +84,10 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         // initialize inputs
         initializeInputs(adapter);
         if (hasStreamSettings()) {
-            adapter.addInput("NETWORK", "Network", Arrays.asList("tcp", "ws", "quic", "httpupgrade", "splithttp"));
+            adapter.addInput("NETWORK", "Network", Arrays.asList("tcp", "ws", "quic", "httpupgrade", "xhttp"));
             adapter.addInput("SECURITY", "Security", Arrays.asList("none", "tls", "reality"));
         }
+        afterInitializeInputs(adapter);
 
         adapter.setOnInputChangedListener((k, v) -> {
             onInputChanged(adapter, k, v);
@@ -113,18 +126,25 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                 String json = gson.toJson(outbound);
                 Log.d(TAG, json);
 
-                ProxyDao proxyDao = AppDatabase.getInstance().proxyDao();
-                if (proxyDao.exists(label, subscription) > 0) {
-                    // update
-                    proxyDao.updateConfig(label, subscription, json);
+                if (!inline) {
+                    ProxyDao proxyDao = AppDatabase.getInstance().proxyDao();
+                    if (proxyDao.exists(label, subscription) > 0) {
+                        // update
+                        proxyDao.updateConfig(label, subscription, json);
+                    } else {
+                        // insert
+                        Proxy proxy = new Proxy();
+                        proxy.subscription = subscription;
+                        proxy.label = label;
+                        proxy.config = json;
+                        proxy.protocol = getProtocolName();
+                        proxyDao.add(proxy);
+                    }
                 } else {
-                    // insert
-                    Proxy proxy = new Proxy();
-                    proxy.subscription = subscription;
-                    proxy.label = label;
-                    proxy.config = json;
-                    proxy.protocol = getProtocolName();
-                    proxyDao.add(proxy);
+                    Log.i(TAG, "inline result: " + json);
+                    Intent intent = new Intent();
+                    intent.putExtra("CONFIG", json);
+                    setResult(RESULT_OK, intent);
                 }
 
                 finish();
@@ -140,7 +160,26 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    abstract protected boolean validate(ProxyEditTextAdapter adapter);
+    protected boolean validate(ProxyEditTextAdapter adapter) {
+        if (adapter.exists("NETWORK_XHTTP_DOWNLOAD_PORT")) {
+            try {
+                int i = Integer.parseInt(adapter.getValue("NETWORK_XHTTP_DOWNLOAD_PORT"));
+                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_PORT", true);
+            } catch (NumberFormatException e) {
+                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_PORT", false);
+                return false;
+            }
+        }
+        if (adapter.getValue("NETWORK_XHTTP_SEPARATE_DOWNLOAD").equals("True")) {
+            if (xhttpDownload.isEmpty()) {
+                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_BTN", false);
+                return false;
+            } else {
+                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_BTN", true);
+            }
+        }
+        return true;
+    };
 
     /**
      * @return type of T
@@ -160,28 +199,41 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         outbound.streamSettings = new StreamSettings();
         String network = this.adapter.getValue("NETWORK");
         outbound.streamSettings.network = network;
-        if (network.equals("ws")) {
-            outbound.streamSettings.wsSettings = new WsSettings();
-            outbound.streamSettings.wsSettings.path = adapter.getValue("NETWORK_WS_PATH");
-            outbound.streamSettings.wsSettings.host = adapter.getValue("NETWORK_WS_HOST");
-        } else if (network.equals("quic")) {
-            outbound.streamSettings.quicSettings = new QuicSettings();
-            outbound.streamSettings.quicSettings.header.type = adapter.getValue("NETWORK_QUIC_HEADER");
-            outbound.streamSettings.quicSettings.security = adapter.getValue("NETWORK_QUIC_SECURITY");
-            if (!outbound.streamSettings.quicSettings.security.equals("none")) {
-                outbound.streamSettings.quicSettings.key = adapter.getValue("NETWORK_QUIC_KEY");
-            }
-        } else if (network.equals("httpupgrade")) {
-            outbound.streamSettings.httpupgradeSettings = new HttpUpgradeSettings();
-            outbound.streamSettings.httpupgradeSettings.path = adapter.getValue("NETWORK_HTTPUPGRADE_PATH");
-            outbound.streamSettings.httpupgradeSettings.host = adapter.getValue("NETWORK_HTTPUPGRADE_HOST");
-        } else if (network.equals("splithttp")) {
-            outbound.streamSettings.splithttpSettings = new SplitHttpSettings();
-            outbound.streamSettings.splithttpSettings.path = adapter.getValue("NETWORK_SPLITHTTP_PATH");
-            outbound.streamSettings.splithttpSettings.host = adapter.getValue("NETWORK_SPLITHTTP_HOST");
-            outbound.streamSettings.splithttpSettings.scMaxEachPostBytes = adapter.getValue("NETWORK_SPLITHTTP_MAX_POST");
-            outbound.streamSettings.splithttpSettings.scMaxConcurrentPosts = adapter.getValue("NETWORK_SPLITHTTP_CONCURRENT_POSTS");
-            outbound.streamSettings.splithttpSettings.scMinPostsIntervalMs = adapter.getValue("NETWORK_SPLITHTTP_MIN_POST_INTERVAL");
+        switch (network) {
+            case "ws":
+                outbound.streamSettings.wsSettings = new WsSettings();
+                outbound.streamSettings.wsSettings.path = adapter.getValue("NETWORK_WS_PATH");
+                outbound.streamSettings.wsSettings.host = adapter.getValue("NETWORK_WS_HOST");
+                break;
+            case "quic":
+                outbound.streamSettings.quicSettings = new QuicSettings();
+                outbound.streamSettings.quicSettings.header.type = adapter.getValue("NETWORK_QUIC_HEADER");
+                outbound.streamSettings.quicSettings.security = adapter.getValue("NETWORK_QUIC_SECURITY");
+                if (!outbound.streamSettings.quicSettings.security.equals("none")) {
+                    outbound.streamSettings.quicSettings.key = adapter.getValue("NETWORK_QUIC_KEY");
+                }
+                break;
+            case "httpupgrade":
+                outbound.streamSettings.httpupgradeSettings = new HttpUpgradeSettings();
+                outbound.streamSettings.httpupgradeSettings.path = adapter.getValue("NETWORK_HTTPUPGRADE_PATH");
+                outbound.streamSettings.httpupgradeSettings.host = adapter.getValue("NETWORK_HTTPUPGRADE_HOST");
+                break;
+            case "xhttp":
+                outbound.streamSettings.xHttpSettings = new XHttpSettings();
+                outbound.streamSettings.xHttpSettings.mode = adapter.getValue("NETWORK_XHTTP_MODE");
+                outbound.streamSettings.xHttpSettings.path = adapter.getValue("NETWORK_XHTTP_PATH");
+                outbound.streamSettings.xHttpSettings.host = adapter.getValue("NETWORK_XHTTP_HOST");
+                if (xhttpDownload != null && !xhttpDownload.isEmpty()) {
+                    Type type = new TypeToken<Map<String, Object>>(){}.getType();
+                    Gson gson = new GsonBuilder().create();
+                    Map<String, Object> downloadConfig = gson.fromJson(xhttpDownload, type);
+                    if (downloadConfig.get("streamSettings") instanceof Map) {
+                        outbound.streamSettings.xHttpSettings.downloadSettings = ((Map<String, Object>) downloadConfig.get("streamSettings"));
+                        outbound.streamSettings.xHttpSettings.downloadSettings.put("network", "xhttp");
+                        outbound.streamSettings.xHttpSettings.downloadSettings.put("address", adapter.getValue("NETWORK_XHTTP_DOWNLOAD_ADDRESS"));
+                        outbound.streamSettings.xHttpSettings.downloadSettings.put("port", Integer.parseInt(adapter.getValue("NETWORK_XHTTP_DOWNLOAD_PORT")));
+                    }
+                }
         }
 
         String security = this.adapter.getValue("SECURITY");
@@ -189,7 +241,11 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             outbound.streamSettings.security = "tls";
             outbound.streamSettings.tlsSettings = new TLSSettings();
             outbound.streamSettings.tlsSettings.allowInsecure = adapter.getValue("SECURITY_TLS_INSECURE").equals("True");
-            outbound.streamSettings.tlsSettings.fingerprint = adapter.getValue("SECURITY_TLS_FINGERPRINT");
+            if (adapter.getValue("SECURITY_TLS_FINGERPRINT").equals("None")) {
+                outbound.streamSettings.tlsSettings.fingerprint = "";
+            } else {
+                outbound.streamSettings.tlsSettings.fingerprint = adapter.getValue("SECURITY_TLS_FINGERPRINT");
+            }
             outbound.streamSettings.tlsSettings.serverName = adapter.getValue("SECURITY_TLS_SNI");
             outbound.streamSettings.tlsSettings.alpn = adapter.getValue("SECURITY_TLS_ALPN").split(",");
         } else if (security.equals("reality")) {
@@ -199,6 +255,11 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             outbound.streamSettings.realitySettings.fingerprint = adapter.getValue("SECURITY_REALITY_FINGERPRINT");
             outbound.streamSettings.realitySettings.serverName = adapter.getValue("SECURITY_REALITY_SNI");
             outbound.streamSettings.realitySettings.publicKey = adapter.getValue("SECURITY_REALITY_PUBLIC_KEY");
+            if (adapter.getValue("SECURITY_REALITY_FINGERPRINT").equals("None")) {
+                outbound.streamSettings.realitySettings.fingerprint = null;
+            } else {
+                outbound.streamSettings.realitySettings.fingerprint = adapter.getValue("SECURITY_REALITY_FINGERPRINT");
+            }
         }
 
         return outbound;
@@ -213,24 +274,42 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         if (!hasStreamSettings()) return initials;
 
         initials.put("NETWORK", outbound.streamSettings.network);
-        if (outbound.streamSettings.network.equals("ws")) {
-            initials.put("NETWORK_WS_PATH", outbound.streamSettings.wsSettings.path);
-            initials.put("NETWORK_WS_HOST", outbound.streamSettings.wsSettings.host);
-        } else if (outbound.streamSettings.network.equals("quic")) {
-            initials.put("NETWORK_QUIC_HEADER", outbound.streamSettings.quicSettings.header.type);
-            initials.put("NETWORK_QUIC_SECURITY", outbound.streamSettings.quicSettings.security);
-            if (!outbound.streamSettings.quicSettings.security.equals("none")) {
-                initials.put("NETWORK_QUIC_KEY", outbound.streamSettings.quicSettings.key);
-            }
-        } else if (outbound.streamSettings.network.equals("httpupgrade")) {
-            initials.put("NETWORK_HTTPUPGRADE_PATH", outbound.streamSettings.httpupgradeSettings.path);
-            initials.put("NETWORK_HTTPUPGRADE_HOST", outbound.streamSettings.httpupgradeSettings.host);
-        } else if (outbound.streamSettings.network.equals("splithttp")) {
-            initials.put("NETWORK_SPLITHTTP_PATH", outbound.streamSettings.splithttpSettings.path);
-            initials.put("NETWORK_SPLITHTTP_HOST", outbound.streamSettings.splithttpSettings.host);
-            initials.put("NETWORK_SPLITHTTP_MAX_POST", outbound.streamSettings.splithttpSettings.scMaxEachPostBytes);
-            initials.put("NETWORK_SPLITHTTP_CONCURRENT_POSTS", outbound.streamSettings.splithttpSettings.scMaxConcurrentPosts);
-            initials.put("NETWORK_SPLITHTTP_MIN_POST_INTERVAL", outbound.streamSettings.splithttpSettings.scMinPostsIntervalMs);
+        switch (outbound.streamSettings.network) {
+            case "ws":
+                initials.put("NETWORK_WS_PATH", outbound.streamSettings.wsSettings.path);
+                initials.put("NETWORK_WS_HOST", outbound.streamSettings.wsSettings.host);
+                break;
+            case "quic":
+                initials.put("NETWORK_QUIC_HEADER", outbound.streamSettings.quicSettings.header.type);
+                initials.put("NETWORK_QUIC_SECURITY", outbound.streamSettings.quicSettings.security);
+                if (!outbound.streamSettings.quicSettings.security.equals("none")) {
+                    initials.put("NETWORK_QUIC_KEY", outbound.streamSettings.quicSettings.key);
+                }
+                break;
+            case "httpupgrade":
+                initials.put("NETWORK_HTTPUPGRADE_PATH", outbound.streamSettings.httpupgradeSettings.path);
+                initials.put("NETWORK_HTTPUPGRADE_HOST", outbound.streamSettings.httpupgradeSettings.host);
+                break;
+            case "xhttp":
+                if (inline) break;
+                initials.put("NETWORK_XHTTP_MODE", outbound.streamSettings.xHttpSettings.mode);
+                initials.put("NETWORK_XHTTP_PATH", outbound.streamSettings.xHttpSettings.path);
+                initials.put("NETWORK_XHTTP_HOST", outbound.streamSettings.xHttpSettings.host);
+                if (outbound.streamSettings.xHttpSettings.downloadSettings != null) {
+                    initials.put("NETWORK_XHTTP_SEPARATE_DOWNLOAD", "True");
+                    initials.put("NETWORK_XHTTP_DOWNLOAD_ADDRESS", ((String) outbound.streamSettings.xHttpSettings.downloadSettings.get("address")));
+                    initials.put("NETWORK_XHTTP_DOWNLOAD_PORT", (String.valueOf(((Double) outbound.streamSettings.xHttpSettings.downloadSettings.get("port")).intValue())));
+
+                    JsonObject downloadOutbound = new JsonObject();
+                    downloadOutbound.addProperty("protocol", "xhttpstream");
+                    downloadOutbound.add("settings", new JsonObject());
+                    JsonObject downloadStream = new Gson().toJsonTree(outbound.streamSettings.xHttpSettings.downloadSettings).getAsJsonObject();
+                    downloadOutbound.add("streamSettings", downloadStream);
+                    xhttpDownload = new Gson().toJson(downloadOutbound);
+
+                    Log.i(TAG, "decode xhttp: " + xhttpDownload);
+                }
+                break;
         }
 
         if (outbound.streamSettings.security == null || outbound.streamSettings.security.isEmpty()) {
@@ -240,13 +319,21 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             initials.put("SECURITY_TLS_SNI", outbound.streamSettings.tlsSettings.serverName);
             initials.put("SECURITY_TLS_ALPN", String.join(",", outbound.streamSettings.tlsSettings.alpn));
             initials.put("SECURITY_TLS_INSECURE", outbound.streamSettings.tlsSettings.allowInsecure ? "True" : "False");
-            initials.put("SECURITY_TLS_FINGERPRINT", outbound.streamSettings.tlsSettings.fingerprint);
+            if (outbound.streamSettings.tlsSettings.fingerprint.isEmpty()) {
+                initials.put("SECURITY_TLS_FINGERPRINT", "None");
+            } else {
+                initials.put("SECURITY_TLS_FINGERPRINT", outbound.streamSettings.tlsSettings.fingerprint);
+            }
         } else if (outbound.streamSettings.security.equals("reality")) {
             initials.put("SECURITY", "reality");
             initials.put("SECURITY_REALITY_SNI", outbound.streamSettings.realitySettings.serverName);
-            initials.put("SECURITY_REALITY_FINGERPRINT", outbound.streamSettings.realitySettings.fingerprint);
             initials.put("SECURITY_REALITY_SHORTID", outbound.streamSettings.realitySettings.shortId);
             initials.put("SECURITY_REALITY_PUBLIC_KEY", outbound.streamSettings.realitySettings.publicKey);
+            if (outbound.streamSettings.realitySettings.fingerprint == null) {
+                initials.put("SECURITY_REALITY_FINGERPRINT", "None");
+            } else {
+                initials.put("SECURITY_REALITY_FINGERPRINT", outbound.streamSettings.realitySettings.fingerprint);
+            }
         }
 
         return initials;
@@ -261,49 +348,90 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
 
     abstract protected void initializeInputs(ProxyEditTextAdapter adapter);
 
+    protected void afterInitializeInputs(ProxyEditTextAdapter adapter) {
+
+    }
+
     /**
      * Called when user changes a configuration field
      */
     protected void onInputChanged(ProxyEditTextAdapter adapter, String key, String value) {
         if (!hasStreamSettings()) return;
 
-        if (key.equals("NETWORK")) {
-            adapter.removeInputByPrefix("NETWORK_");
-            if (value.equals("ws")) {
-                adapter.addInputAfter("NETWORK", "NETWORK_WS_PATH", "Websocket Path", "/");
-                adapter.addInputAfter("NETWORK", "NETWORK_WS_HOST", "Websocket Host");
-            } else if (value.equals("quic")) {
-                adapter.addInputAfter("NETWORK", "NETWORK_QUIC_HEADER", "QUIC Header", Arrays.asList("none", "srtp", "utp", "wechat-video", "dtls", "wireguard"));
-                adapter.addInputAfter("NETWORK", "NETWORK_QUIC_SECURITY", "QUIC Security", Arrays.asList("none", "aes-128-gcm", "chacha20-poly1305"));
-            } else if (value.equals("httpupgrade")) {
-                adapter.addInputAfter("NETWORK", "NETWORK_HTTPUPGRADE_PATH", "HttpUpgrade Path", "/");
-                adapter.addInputAfter("NETWORK", "NETWORK_HTTPUPGRADE_HOST", "HttpUpgrade Host");
-            } else if (value.equals("splithttp")) {
-                adapter.addInputAfter("NETWORK", "NETWORK_SPLITHTTP_PATH", "SplitHttp Path", "/");
-                adapter.addInputAfter("NETWORK", "NETWORK_SPLITHTTP_HOST", "SplitHttp Host");
-                adapter.addInputAfter("NETWORK", "NETWORK_SPLITHTTP_MAX_POST", "SplitHttp Max Post (bytes)", "1000000", "The maximum size of upload chunks, in bytes.");
-                adapter.addInputAfter("NETWORK", "NETWORK_SPLITHTTP_CONCURRENT_POSTS", "SplitHttp Concurrent Posts", "100", "The number of concurrent uploads");
-                adapter.addInputAfter("NETWORK", "NETWORK_SPLITHTTP_MIN_POST_INTERVAL", "SplitHttp Post Interval (milliseconds)", "30");
-            }
-        } else if (key.equals("NETWORK_QUIC_SECURITY")) {
-            if (value.equals("none")) {
-                adapter.removeInput("NETWORK_QUIC_KEY");
-            } else {
-                adapter.addInputAfter("NETWORK", "NETWORK_QUIC_KEY", "QUIC Encryption Key");
-            }
-        } else if (key.equals("SECURITY")) {
-            adapter.removeInputByPrefix("SECURITY_");
-            if (value.equals("tls")) {
-                adapter.addInputAfter("SECURITY", "SECURITY_TLS_SNI", "TLS Server Name");
-                adapter.addInputAfter("SECURITY", "SECURITY_TLS_ALPN", "TLS ALPN", "h2,http/1.1");
-                adapter.addInputAfter("SECURITY", "SECURITY_TLS_INSECURE", "TLS Allow Insecure", List.of("False", "True"));
-                adapter.addInputAfter("SECURITY", "SECURITY_TLS_FINGERPRINT", "TLS Fingerprint", List.of("None", "chrome", "firefox", "random", "randomized"));
-            } else if (value.equals("reality")) {
-                adapter.addInputAfter("SECURITY", "SECURITY_REALITY_SNI", "REALITY Server Name");
-                adapter.addInputAfter("SECURITY", "SECURITY_REALITY_FINGERPRINT", "REALITY Fingerprint", List.of("None", "chrome", "firefox", "random", "randomized"));
-                adapter.addInputAfter("SECURITY", "SECURITY_REALITY_SHORTID", "REALITY Short ID");
-                adapter.addInputAfter("SECURITY", "SECURITY_REALITY_PUBLIC_KEY", "REALITY Public Key");
-            }
+        switch (key) {
+            case "NETWORK":
+                adapter.removeInputByPrefix("NETWORK_");
+                switch (value) {
+                    case "ws":
+                        adapter.addInputAfter("NETWORK", "NETWORK_WS_PATH", "Websocket Path", "/");
+                        adapter.addInputAfter("NETWORK", "NETWORK_WS_HOST", "Websocket Host");
+                        break;
+                    case "quic":
+                        adapter.addInputAfter("NETWORK", "NETWORK_QUIC_HEADER", "QUIC Header", Arrays.asList("none", "srtp", "utp", "wechat-video", "dtls", "wireguard"));
+                        adapter.addInputAfter("NETWORK", "NETWORK_QUIC_SECURITY", "QUIC Security", Arrays.asList("none", "aes-128-gcm", "chacha20-poly1305"));
+                        break;
+                    case "httpupgrade":
+                        adapter.addInputAfter("NETWORK", "NETWORK_HTTPUPGRADE_PATH", "HttpUpgrade Path", "/");
+                        adapter.addInputAfter("NETWORK", "NETWORK_HTTPUPGRADE_HOST", "HttpUpgrade Host");
+                        break;
+                    case "xhttp":
+                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_SEPARATE_DOWNLOAD", "XHTTP Separate Download", List.of("False", "True"));
+                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_HOST", "XHTTP Host", "");
+                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_PATH", "XHTTP Path", "/");
+                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_MODE", "XHTTP Mode", List.of("packet-up", "stream-up"));
+                }
+                break;
+            case "NETWORK_QUIC_SECURITY":
+                if (value.equals("none")) {
+                    adapter.removeInput("NETWORK_QUIC_KEY");
+                } else {
+                    adapter.addInputAfter("NETWORK", "NETWORK_QUIC_KEY", "QUIC Encryption Key");
+                }
+                break;
+            case "SECURITY":
+                adapter.removeInputByPrefix("SECURITY_");
+                if (value.equals("tls")) {
+                    adapter.addInputAfter("SECURITY", "SECURITY_TLS_SNI", "TLS Server Name");
+                    adapter.addInputAfter("SECURITY", "SECURITY_TLS_ALPN", "TLS ALPN", "h2,http/1.1");
+                    adapter.addInputAfter("SECURITY", "SECURITY_TLS_INSECURE", "TLS Allow Insecure", List.of("False", "True"));
+                    adapter.addInputAfter("SECURITY", "SECURITY_TLS_FINGERPRINT", "TLS Fingerprint", List.of("None", "chrome", "firefox", "random", "randomized"));
+                } else if (value.equals("reality")) {
+                    adapter.addInputAfter("SECURITY", "SECURITY_REALITY_SNI", "REALITY Server Name");
+                    adapter.addInputAfter("SECURITY", "SECURITY_REALITY_FINGERPRINT", "REALITY Fingerprint", List.of("chrome", "firefox", "random", "randomized"));
+                    adapter.addInputAfter("SECURITY", "SECURITY_REALITY_SHORTID", "REALITY Short ID");
+                    adapter.addInputAfter("SECURITY", "SECURITY_REALITY_PUBLIC_KEY", "REALITY Public Key");
+                }
+                break;
+
+            case "NETWORK_XHTTP_SEPARATE_DOWNLOAD":
+                adapter.removeInputByPrefix("NETWORK_XHTTP_DOWNLOAD_BTN");
+                adapter.removeInputByPrefix("NETWORK_XHTTP_DOWNLOAD_ADDRESS");
+                adapter.removeInputByPrefix("NETWORK_XHTTP_DOWNLOAD_PORT");
+                if (value.equals("True")) {
+                    adapter.addInputAfter("NETWORK_XHTTP_SEPARATE_DOWNLOAD", "NETWORK_XHTTP_DOWNLOAD_PORT", "XHTTP Download Port");
+                    adapter.addInputAfter("NETWORK_XHTTP_SEPARATE_DOWNLOAD", "NETWORK_XHTTP_DOWNLOAD_ADDRESS", "XHTTP Download Address");
+                    adapter.addInputAfter("NETWORK_XHTTP_SEPARATE_DOWNLOAD", "NETWORK_XHTTP_DOWNLOAD_BTN", "XHTTP download stream settings", () -> {
+                        Intent intent = new Intent(this, XHttpStreamActivity.class);
+                        intent.putExtra("LABEL", "Download stream settings");
+                        intent.putExtra("INLINE", true);
+                        if (!xhttpDownload.isEmpty()) intent.putExtra("CONFIG", xhttpDownload);
+                        startActivityForResult(intent, 2);
+                    });
+                } else {
+                    xhttpDownload = "";
+                }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (data == null) return;
+
+        // xhttp download
+        if (resultCode == RESULT_OK && requestCode == 2) {
+            xhttpDownload = data.getStringExtra("CONFIG");
         }
     }
 }

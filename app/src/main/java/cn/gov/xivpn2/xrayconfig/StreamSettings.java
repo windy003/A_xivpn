@@ -4,9 +4,14 @@ public class StreamSettings {
     public String network;
     public String security;
     public WsSettings wsSettings;
-    public SplitHttpSettings splithttpSettings;
+    public XHttpSettings splithttpSettings;
     public HttpUpgradeSettings httpupgradeSettings;
     public QuicSettings quicSettings;
     public TLSSettings tlsSettings;
     public RealitySettings realitySettings;
+    public XHttpSettings xHttpSettings;
+
+    // used by xhttp
+    public String address;
+    public int port;
 }

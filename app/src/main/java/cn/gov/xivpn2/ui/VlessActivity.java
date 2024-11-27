@@ -17,6 +17,9 @@ import cn.gov.xivpn2.xrayconfig.VmessUser;
 public class VlessActivity extends ProxyActivity<VlessSettings>{
     @Override
     protected boolean validate(ProxyEditTextAdapter adapter) {
+        if (!super.validate(adapter)) {
+            return false;
+        }
         return adapter.validate((k, v) -> {
             if (k.equals("ADDRESS") || k.equals("UUID")) {
                 return !v.isEmpty();

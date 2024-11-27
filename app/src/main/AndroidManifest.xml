@@ -49,6 +49,9 @@
         <activity
             android:name=".ui.WireguardActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.XHttpStreamActivity"
+            android:exported="false" />
 
         <service
             android:name=".service.XiVPNService"

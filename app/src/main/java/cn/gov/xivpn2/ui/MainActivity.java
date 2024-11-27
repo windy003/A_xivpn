@@ -131,10 +131,13 @@ public class MainActivity extends AppCompatActivity {
                 Config config = buildXrayConfig();
 
                 // start vpn service
-                Intent intent2 = new Intent(this, XiVPNService.class);
-                intent2.setAction("cn.gov.xivpn2.START");
-                startForegroundService(intent2);
-                binder.getService().startVPN(config);
+
+                if (binder.getService().startVPN(config)) {
+                    Intent intent2 = new Intent(this, XiVPNService.class);
+                    intent2.setAction("cn.gov.xivpn2.START");
+                    startForegroundService(intent2);
+                }
+
 
             } else {
                 // stop

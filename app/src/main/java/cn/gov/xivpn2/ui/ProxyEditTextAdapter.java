@@ -7,10 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -41,6 +43,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public int getItemViewType(int position) {
+        if (inputs.get(position).isButton) return 2;
         return inputs.get(position).isSelect() ? 0 : 1;
     }
 
@@ -96,6 +99,10 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.addInputAfter(after, new Input(key, label, "", Collections.emptyList()));
     }
 
+    public void addInputAfter(String after, String key, String label, Runnable onClick) {
+        this.addInputAfter(after, new Input(key, label, onClick));
+    }
+
     public void addInputAfter(String after, String key, String label, String defaultValue) {
         this.addInputAfter(after, new Input(key, label, "", Collections.emptyList(), defaultValue));
     }
@@ -146,6 +153,9 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         } else if (viewType == 1) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_edittext, parent, false);
             return new EditTextViewHolder(view);
+        } else if (viewType == 2) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_button, parent, false);
+            return new ButtonViewHolder(view);
         } else {
             throw new IllegalArgumentException("view type " + viewType);
         }
@@ -191,6 +201,17 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             });
         }
 
+        if (h instanceof ButtonViewHolder) {
+            ButtonViewHolder holder = (ButtonViewHolder) h;
+            holder.btn.setOnClickListener(v -> {
+                input.onClick.run();
+            });
+            holder.btn.setText(input.hint);
+            holder.btn.setError(null);
+            if (!input.isValidated()) {
+                holder.btn.setError("Invalid input");
+            }
+        }
 
     }
 
@@ -201,6 +222,15 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             }
         }
         return "";
+    }
+
+    public boolean exists(String key) {
+        for (int i = 0; i < inputs.size(); i++) {
+            if (inputs.get(i).key.equals(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setValue(String key, String value) {
@@ -227,14 +257,24 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         boolean valid = true;
         for (int i = 0; i < inputs.size(); i++) {
             Boolean v = consumer.apply(inputs.get(i).key, inputs.get(i).text);
+            inputs.get(i).setValidated(v);
             if (v != inputs.get(i).validated) {
                 this.notifyItemChanged(i);
             }
-            inputs.get(i).setValidated(v);
             if (!v) valid = false;
         }
         return valid;
     }
+
+    public void setValidated(String key, boolean b) {
+        for (int i = 0; i < inputs.size(); i++) {
+            if (inputs.get(i).key.equals(key)) {
+                inputs.get(i).setValidated(b);
+                this.notifyItemChanged(i);
+            }
+        }
+    }
+
 
     public static class DropdownViewHolder extends RecyclerView.ViewHolder implements TextWatcher {
         private final TextInputLayout layout;
@@ -294,6 +334,17 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
                 onTextChanged.run();
             }
         }
+    }
+
+    public static class ButtonViewHolder extends RecyclerView.ViewHolder {
+
+        private final MaterialButton btn;
+
+        public ButtonViewHolder(@NonNull View itemView) {
+            super(itemView);
+            btn = itemView.findViewById(R.id.btn);
+        }
+
     }
 
     public static class EditTextViewHolder extends RecyclerView.ViewHolder implements TextWatcher {
@@ -365,6 +416,8 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         private String text = "";
         private boolean validated = true;
         private String error;
+        private boolean isButton = false;
+        private Runnable onClick = null;
 
         public Input(String key, String hint, String helperText, List<String> select) {
             this.hint = hint;
@@ -379,6 +432,15 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         public Input(String key, String hint, String helperText, List<String> select, String defaultValue) {
             this(key, hint, helperText, select);
             this.text = defaultValue;
+        }
+
+        public Input(String key, String hint, Runnable onClick) {
+            this.hint = hint;
+            this.key = key;
+            this.helperText = "";
+            this.select = Collections.emptyList();
+            this.isButton = true;
+            this.onClick = onClick;
         }
 
         public void setValidated(boolean validated) {
