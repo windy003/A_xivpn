@@ -49,25 +49,25 @@ jobs:
       - name: Calculate sha256
         run: |
           sha256sum ./app/build/outputs/apk/arm64_v8a/release/app-arm64_v8a-release.apk > sha256.txt
-          sha256sum ./app/build/outputs/apk/universal/release/app-universal-release.apk > sha256.txt
-          sha256sum ./app/build/outputs/apk/x86_64/release/app-x86_64-release.apk > sha256.txt
+          sha256sum ./app/build/outputs/apk/universal/release/app-universal-release.apk >> sha256.txt
+          sha256sum ./app/build/outputs/apk/x86_64/release/app-x86_64-release.apk >> sha256.txt
 
       - name: Upload Universal APK to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: release.apk
+          name: xivpn-universal.apk
           path: ./app/build/outputs/apk/universal/release/app-universal-release.apk
 
       - name: Upload x86_64 APK to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: release.apk
+          name: xivpn-x86_64.apk
           path: ./app/build/outputs/apk/x86_64/release/app-x86_64-release.apk
 
       - name: Upload arm64_v8a APK to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: release.apk
+          name: xivpn-arm64_v8a.apk
           path: ./app/build/outputs/apk/arm64_v8a/release/app-arm64_v8a-release.apk
 
       - name: Upload SHA256 to Artifacts
