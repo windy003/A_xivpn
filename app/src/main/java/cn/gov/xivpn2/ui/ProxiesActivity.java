@@ -104,11 +104,11 @@ public class ProxiesActivity extends AppCompatActivity {
                     // check if selected subscription is deleted
                     // if so, set to default
                     SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-                    String selectedLabel = sp.getString("SELECTED_LABEL", "Freedom");
+                    String selectedLabel = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
                     String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
                     if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
                         SharedPreferences.Editor edit = sp.edit();
-                        edit.putString("SELECTED_LABEL", "Freedom");
+                        edit.putString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
                         edit.putString("SELECTED_SUBSCRIPTION", "none");
                         edit.commit();
                     }
@@ -147,7 +147,7 @@ public class ProxiesActivity extends AppCompatActivity {
         adapter.addProxies(AppDatabase.getInstance().proxyDao().findAll());
 
         SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-        String label = sp.getString("SELECTED_LABEL", "Freedom");
+        String label = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
         String subscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
         adapter.setSelectedProxy(label, subscription);
 

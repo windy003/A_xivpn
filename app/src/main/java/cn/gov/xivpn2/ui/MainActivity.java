@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         textView.setText("");
         SharedPreferences sp = getSharedPreferences("XIVPN", MODE_PRIVATE);
-        btn.setText(sp.getString("SELECTED_LABEL", "Freedom"));
+        btn.setText(sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)"));
     }
 
     @Override
@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
 
         // outbound
         SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-        String label = sp.getString("SELECTED_LABEL", "Freedom");
+        String label = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
         String subscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
         Proxy proxy = AppDatabase.getInstance().proxyDao().find(label, subscription);
 
