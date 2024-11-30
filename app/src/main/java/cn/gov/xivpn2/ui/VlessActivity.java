@@ -11,7 +11,7 @@ import cn.gov.xivpn2.xrayconfig.VlessServerSettings;
 import cn.gov.xivpn2.xrayconfig.VlessSettings;
 import cn.gov.xivpn2.xrayconfig.VlessUser;
 
-public class VlessActivity extends ProxyActivity<VlessSettings>{
+public class VlessActivity extends ProxyActivity<VlessSettings> {
     @Override
     protected boolean validate(IProxyEditor adapter) {
         if (!super.validate(adapter)) {
@@ -36,7 +36,8 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
 
     @Override
     protected Type getType() {
-        return new TypeToken<Outbound<VlessSettings>>() { }.getType();
+        return new TypeToken<Outbound<VlessSettings>>() {
+        }.getType();
     }
 
     @Override

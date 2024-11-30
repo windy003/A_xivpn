@@ -3,7 +3,6 @@ package cn.gov.xivpn2.ui;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -37,9 +36,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import cn.gov.xivpn2.R;
-import cn.gov.xivpn2.service.XiVPNService;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
+import cn.gov.xivpn2.service.XiVPNService;
 import cn.gov.xivpn2.xrayconfig.Config;
 import cn.gov.xivpn2.xrayconfig.Inbound;
 import cn.gov.xivpn2.xrayconfig.Outbound;
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private MaterialSwitch aSwitch;
     private TextView textView;
     private XiVPNService.XiVPNBinder binder;
-
+    private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
     private final ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -76,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
             binder = null;
         }
     };
-    private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
 
     @Override
     protected void onStart() {
@@ -151,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ActivityCompat.requestPermissions(
                         this,
-                        new String[] { Manifest.permission.POST_NOTIFICATIONS },
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
                         2
                 );
             }

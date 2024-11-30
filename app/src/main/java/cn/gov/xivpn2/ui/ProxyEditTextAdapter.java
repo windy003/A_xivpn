@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -315,16 +314,16 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             editText.setAdapter(new NonFilterableArrayAdapter(editText.getContext(), R.layout.list_item, strings));
         }
 
-        public void setText(String s) {
-            editText.setText(s);
-        }
-
         public void setHelperText(String s) {
             layout.setHelperText(s);
         }
 
         public String getText() {
             return Objects.requireNonNull(editText.getText()).toString();
+        }
+
+        public void setText(String s) {
+            editText.setText(s);
         }
 
         public void setContentDescription(String s) {
@@ -380,10 +379,6 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             layout.setHint(s);
         }
 
-        public void setText(String s) {
-            editText.setText(s);
-        }
-
         public void setHelperText(String s) {
             layout.setHelperText(s);
         }
@@ -398,6 +393,10 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         public String getText() {
             return Objects.requireNonNull(editText.getText()).toString();
+        }
+
+        public void setText(String s) {
+            editText.setText(s);
         }
 
         @Override
@@ -457,20 +456,20 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             this.onClick = onClick;
         }
 
-        public void setValidated(boolean validated) {
-            this.validated = validated;
-        }
-
         public boolean isValidated() {
             return validated;
         }
 
-        public void setError(String error) {
-            this.error = error;
+        public void setValidated(boolean validated) {
+            this.validated = validated;
         }
 
         public String getError() {
             return error;
+        }
+
+        public void setError(String error) {
+            this.error = error;
         }
 
         public boolean isSelect() {
@@ -493,12 +492,12 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             return text;
         }
 
-        public String getKey() {
-            return key;
-        }
-
         public void setText(String text) {
             this.text = text;
+        }
+
+        public String getKey() {
+            return key;
         }
     }
 

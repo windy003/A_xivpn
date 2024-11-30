@@ -28,7 +28,8 @@ public class XHttpStreamActivity extends ProxyActivity<XHttpSettings> {
 
     @Override
     protected Type getType() {
-        return new TypeToken<Outbound<XHttpStream>>() { }.getType();
+        return new TypeToken<Outbound<XHttpStream>>() {
+        }.getType();
     }
 
     @Override

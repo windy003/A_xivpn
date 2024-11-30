@@ -21,8 +21,8 @@
         app:title="@string/open_source_licenses" />
 
     <Preference
-        app:key="xray_version"
         android:title="@string/xray_version"
+        app:key="xray_version"
         app:summary="" />
 
 </PreferenceScreen>

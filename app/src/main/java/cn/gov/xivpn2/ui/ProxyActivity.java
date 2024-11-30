@@ -177,7 +177,9 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             }
         }
         return true;
-    };
+    }
+
+    ;
 
     /**
      * @return type of T
@@ -222,7 +224,8 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                 outbound.streamSettings.xHttpSettings.path = adapter.getValue("NETWORK_XHTTP_PATH");
                 outbound.streamSettings.xHttpSettings.host = adapter.getValue("NETWORK_XHTTP_HOST");
                 if (xhttpDownload != null && !xhttpDownload.isEmpty()) {
-                    Type type = new TypeToken<Map<String, Object>>(){}.getType();
+                    Type type = new TypeToken<Map<String, Object>>() {
+                    }.getType();
                     Gson gson = new GsonBuilder().create();
                     Map<String, Object> downloadConfig = gson.fromJson(xhttpDownload, type);
                     if (downloadConfig.get("streamSettings") instanceof Map) {

@@ -5,10 +5,6 @@ import androidx.room.RoomDatabase;
 
 @Database(entities = {Proxy.class, Subscription.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
-    public abstract ProxyDao proxyDao();
-
-    public abstract SubscriptionDao subscriptionDao();
-
     private static AppDatabase instance;
 
     public static AppDatabase getInstance() {
@@ -18,4 +14,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public static void setInstance(AppDatabase instance) {
         AppDatabase.instance = instance;
     }
+
+    public abstract ProxyDao proxyDao();
+
+    public abstract SubscriptionDao subscriptionDao();
 }

@@ -11,7 +11,7 @@ import cn.gov.xivpn2.xrayconfig.VmessServerSettings;
 import cn.gov.xivpn2.xrayconfig.VmessSettings;
 import cn.gov.xivpn2.xrayconfig.VmessUser;
 
-public class VmessActivity extends ProxyActivity<VmessSettings>{
+public class VmessActivity extends ProxyActivity<VmessSettings> {
     @Override
     protected boolean validate(IProxyEditor adapter) {
         if (!super.validate(adapter)) {
@@ -36,7 +36,8 @@ public class VmessActivity extends ProxyActivity<VmessSettings>{
 
     @Override
     protected Type getType() {
-        return new TypeToken<Outbound<VmessSettings>>() { }.getType();
+        return new TypeToken<Outbound<VmessSettings>>() {
+        }.getType();
     }
 
     @Override

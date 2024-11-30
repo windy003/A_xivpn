@@ -1,59 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="wrap_content">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card"
-        android:layout_margin="6dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_margin="8dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp">
 
             <TextView
-                android:text="US - VMESS 1"
-                style="?attr/textAppearanceTitleLarge"
                 android:id="@+id/label"
-                android:layout_margin="6dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                style="?attr/textAppearanceTitleLarge"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                style="?attr/textAppearanceBody1"
-                android:text="VMESS"
-                android:id="@+id/protocol"
-                android:layout_marginStart="6dp"
-                app:layout_constraintTop_toBottomOf="@id/label"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:text="US - VMESS 1"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                android:id="@+id/protocol"
                 style="?attr/textAppearanceBody1"
-                android:id="@+id/ping"
-                android:text="140MS"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintTop_toBottomOf="@id/label"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="VMESS"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/label" />
+
+            <TextView
+                android:id="@+id/ping"
+                style="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="140MS"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/label" />
 
             <TextView
                 android:id="@+id/subscription"
                 style="?attr/textAppearanceBody1"
-                android:text="Paoluz"
-                android:layout_marginStart="8dp"
-                app:layout_constraintTop_toBottomOf="@id/label"
-                app:layout_constraintStart_toEndOf="@id/protocol"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Paoluz"
+                app:layout_constraintStart_toEndOf="@id/protocol"
+                app:layout_constraintTop_toBottomOf="@id/label" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.card.MaterialCardView>

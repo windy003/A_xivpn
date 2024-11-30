@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -17,10 +16,25 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.BuildConfig;
+import cn.gov.xivpn2.R;
 
 public class CrashActivity extends AppCompatActivity {
+
+    private static @NonNull StringBuilder getMessage(String exception) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Please report this issue to the developers.\n");
+        sb.append("Android Release: ").append(Build.VERSION.RELEASE).append("\n");
+        sb.append("Android SDK: ").append(Build.VERSION.SDK_INT).append("\n");
+        sb.append("Device: ").append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n");
+        sb.append("App Version: ").append(BuildConfig.VERSION_NAME).append(" (").append(BuildConfig.VERSION_CODE).append(")\n");
+        sb.append("\n");
+
+        sb.append("Exception:\n");
+        sb.append(exception);
+
+        return sb;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,20 +72,5 @@ public class CrashActivity extends AppCompatActivity {
                 Log.e("CrashActivity", "open browser", e);
             }
         });
-    }
-
-    private static @NonNull StringBuilder getMessage(String exception) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Please report this issue to the developers.\n");
-        sb.append("Android Release: ").append(Build.VERSION.RELEASE).append("\n");
-        sb.append("Android SDK: ").append(Build.VERSION.SDK_INT).append("\n");
-        sb.append("Device: ").append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n");
-        sb.append("App Version: ").append(BuildConfig.VERSION_NAME).append(" (").append(BuildConfig.VERSION_CODE).append(")\n");
-        sb.append("\n");
-
-        sb.append("Exception:\n");
-        sb.append(exception);
-
-        return sb;
     }
 }

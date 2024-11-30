@@ -9,7 +9,7 @@ import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.TrojanServerSettings;
 import cn.gov.xivpn2.xrayconfig.TrojanSettings;
 
-public class TrojanActivity extends ProxyActivity<TrojanSettings>{
+public class TrojanActivity extends ProxyActivity<TrojanSettings> {
     @Override
     protected boolean validate(IProxyEditor adapter) {
         return adapter.validate((k, v) -> {
@@ -31,7 +31,8 @@ public class TrojanActivity extends ProxyActivity<TrojanSettings>{
 
     @Override
     protected Type getType() {
-        return new TypeToken<Outbound<TrojanSettings>>() { }.getType();
+        return new TypeToken<Outbound<TrojanSettings>>() {
+        }.getType();
     }
 
     @Override

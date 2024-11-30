@@ -32,7 +32,7 @@ public class ShadowsocksActivity extends ProxyActivity<ShadowsocksSettings> {
     @Override
     protected boolean validate(IProxyEditor adapter) {
         return adapter.validate((k, v) -> {
-            if ( k.equals("ADDRESS") || k.equals("PASSWORD")) {
+            if (k.equals("ADDRESS") || k.equals("PASSWORD")) {
                 return !v.isEmpty();
             }
             if (k.equals("PORT")) {
@@ -68,7 +68,8 @@ public class ShadowsocksActivity extends ProxyActivity<ShadowsocksSettings> {
 
     @Override
     protected Type getType() {
-        return new TypeToken<Outbound<ShadowsocksSettings>>() { }.getType();
+        return new TypeToken<Outbound<ShadowsocksSettings>>() {
+        }.getType();
     }
 
     @Override

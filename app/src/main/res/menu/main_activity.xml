@@ -4,17 +4,16 @@
 
 
     <item
-        app:showAsAction="ifRoom"
         android:id="@+id/subscriptions"
         android:icon="@drawable/baseline_cloud_24"
-        android:title="@string/subscriptions" />
+        android:title="@string/subscriptions"
+        app:showAsAction="ifRoom" />
 
     <item
-        app:showAsAction="ifRoom"
         android:id="@+id/settings"
         android:icon="@drawable/baseline_settings_24"
-        android:title="@string/settings" />
-
+        android:title="@string/settings"
+        app:showAsAction="ifRoom" />
 
 
 </menu>

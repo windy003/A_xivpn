@@ -1,6 +1,5 @@
 package cn.gov.xivpn2.database;
 
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;

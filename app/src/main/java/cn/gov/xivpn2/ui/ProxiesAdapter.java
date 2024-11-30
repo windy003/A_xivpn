@@ -18,16 +18,10 @@ import cn.gov.xivpn2.database.Proxy;
 
 public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHolder> {
 
+    private final ArrayList<Proxy> proxies;
     private Listener onClickListener;
     private Listener onLongClickListener;
-
-    public static interface Listener {
-        void onClick(View v, Proxy proxy, int i);
-    }
-
-    private final ArrayList<Proxy> proxies;
     private int selected = -1;
-
     public ProxiesAdapter() {
         proxies = new ArrayList<>();
     }
@@ -114,6 +108,10 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
     @Override
     public int getItemCount() {
         return proxies.size();
+    }
+
+    public static interface Listener {
+        void onClick(View v, Proxy proxy, int i);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

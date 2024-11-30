@@ -21,31 +21,31 @@
         app:layout_constraintVertical_bias="0.20" />
 
     <TextView
-        android:gravity="center"
         android:id="@+id/textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
+        android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_report" />
 
     <TextView
         android:id="@+id/version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_report"
-        android:text="@string/select_outbound"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/vpn_switch"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="23dp"
-        android:layout_height="wrap_content"/>
+        android:text="@string/select_outbound"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/vpn_switch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

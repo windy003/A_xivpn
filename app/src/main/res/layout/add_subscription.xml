@@ -2,26 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:orientation="vertical">
 
     <com.google.android.material.textfield.TextInputLayout
-        android:hint="@string/label"
-        android:layout_margin="12dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:hint="@string/label">
+
         <com.google.android.material.textfield.TextInputEditText
-            android:maxLines="1"
             android:id="@+id/label"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:hint="@string/url"
-        android:layout_margin="12dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:hint="@string/url">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/url"
             android:layout_width="match_parent"

@@ -23,35 +23,12 @@ import cn.gov.xivpn2.xrayconfig.Config;
 
 public class XiVPNService extends VpnService {
 
+    public static final int SOCKS_PORT = 18964;
     private final IBinder binder = new XiVPNBinder();
     private final String TAG = "XiVPNService";
     private VPNStatusListener listener;
     private Status status = Status.DISCONNECTED;
     private ParcelFileDescriptor fileDescriptor;
-    public static final int SOCKS_PORT = 18964;
-
-    public static enum Status {
-        CONNECTED,
-        CONNECTING,
-        DISCONNECTED,
-    }
-
-    public static interface VPNStatusListener {
-        void onStatusChanged(Status status);
-        void onMessage(String msg);
-    }
-
-    public class XiVPNBinder extends Binder {
-
-        public XiVPNService getService() {
-            return XiVPNService.this;
-        }
-
-        public void setListener(VPNStatusListener listener) {
-            XiVPNService.this.listener = listener;
-        }
-
-    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -126,5 +103,29 @@ public class XiVPNService extends VpnService {
 
     public Status getStatus() {
         return status;
+    }
+
+    public static enum Status {
+        CONNECTED,
+        CONNECTING,
+        DISCONNECTED,
+    }
+
+    public static interface VPNStatusListener {
+        void onStatusChanged(Status status);
+
+        void onMessage(String msg);
+    }
+
+    public class XiVPNBinder extends Binder {
+
+        public XiVPNService getService() {
+            return XiVPNService.this;
+        }
+
+        public void setListener(VPNStatusListener listener) {
+            XiVPNService.this.listener = listener;
+        }
+
     }
 }
