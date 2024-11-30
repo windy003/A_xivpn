@@ -232,6 +232,9 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                         outbound.streamSettings.xHttpSettings.downloadSettings.put("network", "xhttp");
                         outbound.streamSettings.xHttpSettings.downloadSettings.put("address", adapter.getValue("NETWORK_XHTTP_DOWNLOAD_ADDRESS"));
                         outbound.streamSettings.xHttpSettings.downloadSettings.put("port", Integer.parseInt(adapter.getValue("NETWORK_XHTTP_DOWNLOAD_PORT")));
+                        Map<String, String> downloadXhttpSettings = new HashMap<>();
+                        downloadXhttpSettings.put("path", adapter.getValue("NETWORK_XHTTP_PATH"));
+                        outbound.streamSettings.xHttpSettings.downloadSettings.put("xhttpSettings", downloadXhttpSettings);
                     }
                 }
         }
