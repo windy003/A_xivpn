@@ -4,12 +4,8 @@ import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
-import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksServerSettings;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksSettings;
@@ -17,7 +13,7 @@ import cn.gov.xivpn2.xrayconfig.ShadowsocksSettings;
 public class ShadowsocksActivity extends ProxyActivity<ShadowsocksSettings> {
 
     @Override
-    protected ShadowsocksSettings buildProtocolSettings(ProxyEditTextAdapter adapter) {
+    protected ShadowsocksSettings buildProtocolSettings(IProxyEditor adapter) {
         ShadowsocksSettings shadowsocksSettings = new ShadowsocksSettings();
         ShadowsocksServerSettings server = new ShadowsocksServerSettings();
         server.address = adapter.getValue("ADDRESS");
@@ -34,7 +30,7 @@ public class ShadowsocksActivity extends ProxyActivity<ShadowsocksSettings> {
     }
 
     @Override
-    protected boolean validate(ProxyEditTextAdapter adapter) {
+    protected boolean validate(IProxyEditor adapter) {
         return adapter.validate((k, v) -> {
             if ( k.equals("ADDRESS") || k.equals("PASSWORD")) {
                 return !v.isEmpty();
@@ -81,7 +77,7 @@ public class ShadowsocksActivity extends ProxyActivity<ShadowsocksSettings> {
     }
 
     @Override
-    protected void initializeInputs(ProxyEditTextAdapter adapter) {
+    protected void initializeInputs(IProxyEditor adapter) {
         adapter.addInput("ADDRESS", "Address");
         adapter.addInput("PORT", "Port");
         adapter.addInput("PASSWORD", "Password");
@@ -90,7 +86,7 @@ public class ShadowsocksActivity extends ProxyActivity<ShadowsocksSettings> {
     }
 
     @Override
-    protected void onInputChanged(ProxyEditTextAdapter adapter, String key, String value) {
+    protected void onInputChanged(IProxyEditor adapter, String key, String value) {
         super.onInputChanged(adapter, key, value);
     }
 

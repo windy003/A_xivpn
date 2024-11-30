@@ -5,17 +5,15 @@ import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.BiFunction;
 
 import cn.gov.xivpn2.xrayconfig.Outbound;
-import cn.gov.xivpn2.xrayconfig.ShadowsocksSettings;
 import cn.gov.xivpn2.xrayconfig.VmessServerSettings;
 import cn.gov.xivpn2.xrayconfig.VmessSettings;
 import cn.gov.xivpn2.xrayconfig.VmessUser;
 
 public class VmessActivity extends ProxyActivity<VmessSettings>{
     @Override
-    protected boolean validate(ProxyEditTextAdapter adapter) {
+    protected boolean validate(IProxyEditor adapter) {
         if (!super.validate(adapter)) {
             return false;
         }
@@ -42,7 +40,7 @@ public class VmessActivity extends ProxyActivity<VmessSettings>{
     }
 
     @Override
-    protected VmessSettings buildProtocolSettings(ProxyEditTextAdapter adapter) {
+    protected VmessSettings buildProtocolSettings(IProxyEditor adapter) {
         VmessSettings vmessSettings = new VmessSettings();
 
         VmessServerSettings vnext = new VmessServerSettings();
@@ -76,7 +74,7 @@ public class VmessActivity extends ProxyActivity<VmessSettings>{
     }
 
     @Override
-    protected void initializeInputs(ProxyEditTextAdapter adapter) {
+    protected void initializeInputs(IProxyEditor adapter) {
         adapter.addInput("ADDRESS", "Address");
         adapter.addInput("PORT", "Port");
         adapter.addInput("VMESS_SECURITY", "VMESS Security", List.of("auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"));

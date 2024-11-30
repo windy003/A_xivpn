@@ -3,15 +3,11 @@ package cn.gov.xivpn2.ui;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cn.gov.xivpn2.xrayconfig.Outbound;
-import cn.gov.xivpn2.xrayconfig.StreamSettings;
-import cn.gov.xivpn2.xrayconfig.TrojanServerSettings;
-import cn.gov.xivpn2.xrayconfig.TrojanSettings;
 import cn.gov.xivpn2.xrayconfig.WireguardPeer;
 import cn.gov.xivpn2.xrayconfig.WireguardSettings;
 
@@ -20,7 +16,7 @@ public class WireguardActivity extends ProxyActivity<WireguardSettings> {
     private static final Pattern RESERVED_PATTERN = Pattern.compile("^\\d{1,3},\\d{1,3},\\d{1,3}$");
 
     @Override
-    protected boolean validate(ProxyEditTextAdapter adapter) {
+    protected boolean validate(IProxyEditor adapter) {
         return adapter.validate((k, v) -> {
             if (k.equals("PRIVATE_KEY") || k.equals("PEER_ENDPOINT") || k.equals("PEER_PUBLIC_KEY")) {
                 return !v.isEmpty();
@@ -40,7 +36,7 @@ public class WireguardActivity extends ProxyActivity<WireguardSettings> {
     }
 
     @Override
-    protected WireguardSettings buildProtocolSettings(ProxyEditTextAdapter adapter) {
+    protected WireguardSettings buildProtocolSettings(IProxyEditor adapter) {
         WireguardSettings wireguardSettings = new WireguardSettings();
 
         String address1 = adapter.getValue("ADDRESS1");
@@ -92,7 +88,7 @@ public class WireguardActivity extends ProxyActivity<WireguardSettings> {
     }
 
     @Override
-    protected void initializeInputs(ProxyEditTextAdapter adapter) {
+    protected void initializeInputs(IProxyEditor adapter) {
         adapter.addInput("ADDRESS1", "Address 1", "", "Local Address (IPv4 CIDR)");
         adapter.addInput("ADDRESS2", "Address 2", "", "Local Address (IPv6 CIDR)");
         adapter.addInput("PRIVATE_KEY", "Private Key");

@@ -4,18 +4,14 @@ import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.TrojanServerSettings;
 import cn.gov.xivpn2.xrayconfig.TrojanSettings;
-import cn.gov.xivpn2.xrayconfig.VmessServerSettings;
-import cn.gov.xivpn2.xrayconfig.VmessSettings;
-import cn.gov.xivpn2.xrayconfig.VmessUser;
 
 public class TrojanActivity extends ProxyActivity<TrojanSettings>{
     @Override
-    protected boolean validate(ProxyEditTextAdapter adapter) {
+    protected boolean validate(IProxyEditor adapter) {
         return adapter.validate((k, v) -> {
             if (k.equals("PASSWORD") || k.equals("ADDRESS")) {
                 return !v.isEmpty();
@@ -39,7 +35,7 @@ public class TrojanActivity extends ProxyActivity<TrojanSettings>{
     }
 
     @Override
-    protected TrojanSettings buildProtocolSettings(ProxyEditTextAdapter adapter) {
+    protected TrojanSettings buildProtocolSettings(IProxyEditor adapter) {
         TrojanSettings trojanSettings = new TrojanSettings();
 
         TrojanServerSettings server = new TrojanServerSettings();
@@ -69,7 +65,7 @@ public class TrojanActivity extends ProxyActivity<TrojanSettings>{
     }
 
     @Override
-    protected void initializeInputs(ProxyEditTextAdapter adapter) {
+    protected void initializeInputs(IProxyEditor adapter) {
         adapter.addInput("ADDRESS", "Address");
         adapter.addInput("PORT", "Port");
         adapter.addInput("PASSWORD", "Password");

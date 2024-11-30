@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
@@ -41,7 +40,6 @@ import cn.gov.xivpn2.xrayconfig.StreamSettings;
 import cn.gov.xivpn2.xrayconfig.TLSSettings;
 import cn.gov.xivpn2.xrayconfig.WsSettings;
 import cn.gov.xivpn2.xrayconfig.XHttpSettings;
-import cn.gov.xivpn2.xrayconfig.XHttpStream;
 
 public abstract class ProxyActivity<T> extends AppCompatActivity {
 
@@ -160,7 +158,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    protected boolean validate(ProxyEditTextAdapter adapter) {
+    protected boolean validate(IProxyEditor adapter) {
         if (adapter.exists("NETWORK_XHTTP_DOWNLOAD_PORT")) {
             try {
                 int i = Integer.parseInt(adapter.getValue("NETWORK_XHTTP_DOWNLOAD_PORT"));
@@ -189,7 +187,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
     /**
      * Build xray outbound object
      */
-    protected Outbound<T> buildOutboundConfig(ProxyEditTextAdapter adapter) {
+    protected Outbound<T> buildOutboundConfig(IProxyEditor adapter) {
         Outbound<T> outbound = new Outbound<>();
         outbound.protocol = getProtocolName();
         outbound.settings = buildProtocolSettings(adapter);
@@ -345,20 +343,20 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
     /**
      * Build setting object for the proxy protocol
      */
-    abstract protected T buildProtocolSettings(ProxyEditTextAdapter adapter);
+    abstract protected T buildProtocolSettings(IProxyEditor adapter);
 
     abstract protected String getProtocolName();
 
-    abstract protected void initializeInputs(ProxyEditTextAdapter adapter);
+    abstract protected void initializeInputs(IProxyEditor adapter);
 
-    protected void afterInitializeInputs(ProxyEditTextAdapter adapter) {
+    protected void afterInitializeInputs(IProxyEditor adapter) {
 
     }
 
     /**
      * Called when user changes a configuration field
      */
-    protected void onInputChanged(ProxyEditTextAdapter adapter, String key, String value) {
+    protected void onInputChanged(IProxyEditor adapter, String key, String value) {
         if (!hasStreamSettings()) return;
 
         switch (key) {

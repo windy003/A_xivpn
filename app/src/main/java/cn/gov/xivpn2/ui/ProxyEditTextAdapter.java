@@ -26,7 +26,7 @@ import java.util.function.BiFunction;
 
 import cn.gov.xivpn2.R;
 
-public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements IProxyEditor {
 
     private final static String TAG = "ProxyEditTextAdapter";
 
@@ -37,6 +37,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         inputs = new ArrayList<>();
     }
 
+    @Override
     public void setOnInputChangedListener(BiConsumer<String, String> onInputChanged) {
         this.onInputChanged = onInputChanged;
     }
@@ -50,6 +51,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     /**
      * Add the input if no input with the same key exists.
      */
+    @Override
     public void addInput(Input input) {
         boolean found = false;
         for (int i = 0; i < inputs.size(); i++) {
@@ -65,6 +67,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
+    @Override
     public void addInputAfter(String key, Input input) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
@@ -79,38 +82,47 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
+    @Override
     public void addInput(String key, String label) {
         this.addInput(new Input(key, label, "", Collections.emptyList()));
     }
 
+    @Override
     public void addInput(String key, String label, String defaultValue) {
         this.addInput(new Input(key, label, "", Collections.emptyList(), defaultValue));
     }
 
+    @Override
     public void addInput(String key, String label, String defaultValue, String helperText) {
         this.addInput(new Input(key, label, helperText, Collections.emptyList(), defaultValue));
     }
 
+    @Override
     public void addInput(String key, String label, List<String> selections) {
         this.addInput(new Input(key, label, "", selections));
     }
 
+    @Override
     public void addInputAfter(String after, String key, String label) {
         this.addInputAfter(after, new Input(key, label, "", Collections.emptyList()));
     }
 
+    @Override
     public void addInputAfter(String after, String key, String label, Runnable onClick) {
         this.addInputAfter(after, new Input(key, label, onClick));
     }
 
+    @Override
     public void addInputAfter(String after, String key, String label, String defaultValue) {
         this.addInputAfter(after, new Input(key, label, "", Collections.emptyList(), defaultValue));
     }
 
+    @Override
     public void addInputAfter(String after, String key, String label, String defaultValue, String helperText) {
         this.addInputAfter(after, new Input(key, label, helperText, Collections.emptyList(), defaultValue));
     }
 
+    @Override
     public void addInputAfter(String after, String key, String label, List<String> selections) {
         this.addInputAfter(after, new Input(key, label, "", selections));
     }
@@ -118,6 +130,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     /**
      * Remove input with the key. Does nothing if the key does not exist.
      */
+    @Override
     public void removeInput(String key) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
@@ -128,6 +141,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
+    @Override
     public void removeInputByPrefix(String prefix) {
         Iterator<Input> iterator = inputs.iterator();
         int i = 0;
@@ -215,6 +229,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     }
 
+    @Override
     public String getValue(String key) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
@@ -224,6 +239,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         return "";
     }
 
+    @Override
     public boolean exists(String key) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
@@ -233,6 +249,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         return false;
     }
 
+    @Override
     public void setValue(String key, String value) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
@@ -247,12 +264,8 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         return inputs.size();
     }
 
-    /**
-     * validate user input values
-     * @param consumer a function that takes a key-value pair and return true if
-     *                 the user-provided value if valid
-     * @return true if all values are valid
-     */
+
+    @Override
     public boolean validate(BiFunction<String, String, Boolean> consumer) {
         boolean valid = true;
         for (int i = 0; i < inputs.size(); i++) {
@@ -266,6 +279,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         return valid;
     }
 
+    @Override
     public void setValidated(String key, boolean b) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {

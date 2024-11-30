@@ -10,13 +10,10 @@ import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.VlessServerSettings;
 import cn.gov.xivpn2.xrayconfig.VlessSettings;
 import cn.gov.xivpn2.xrayconfig.VlessUser;
-import cn.gov.xivpn2.xrayconfig.VmessServerSettings;
-import cn.gov.xivpn2.xrayconfig.VmessSettings;
-import cn.gov.xivpn2.xrayconfig.VmessUser;
 
 public class VlessActivity extends ProxyActivity<VlessSettings>{
     @Override
-    protected boolean validate(ProxyEditTextAdapter adapter) {
+    protected boolean validate(IProxyEditor adapter) {
         if (!super.validate(adapter)) {
             return false;
         }
@@ -43,7 +40,7 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
     }
 
     @Override
-    protected VlessSettings buildProtocolSettings(ProxyEditTextAdapter adapter) {
+    protected VlessSettings buildProtocolSettings(IProxyEditor adapter) {
         VlessSettings vlessSettings = new VlessSettings();
 
         VlessServerSettings vnext = new VlessServerSettings();
@@ -87,7 +84,7 @@ public class VlessActivity extends ProxyActivity<VlessSettings>{
     }
 
     @Override
-    protected void initializeInputs(ProxyEditTextAdapter adapter) {
+    protected void initializeInputs(IProxyEditor adapter) {
         adapter.addInput("ADDRESS", "Address");
         adapter.addInput("PORT", "Port");
         adapter.addInput("FLOW", "Flow", List.of("none", "xtls-rprx-vision", "xtls-rprx-vision-udp443"));
