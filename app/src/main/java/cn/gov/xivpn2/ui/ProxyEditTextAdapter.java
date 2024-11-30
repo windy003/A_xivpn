@@ -257,10 +257,10 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         boolean valid = true;
         for (int i = 0; i < inputs.size(); i++) {
             Boolean v = consumer.apply(inputs.get(i).key, inputs.get(i).text);
-            inputs.get(i).setValidated(v);
             if (v != inputs.get(i).validated) {
                 this.notifyItemChanged(i);
             }
+            inputs.get(i).setValidated(v);
             if (!v) valid = false;
         }
         return valid;
