@@ -7,11 +7,11 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "cn.gov.xivpn2"
+        applicationId "io.github.exclude0122.xivpn"
         minSdk 28
         targetSdk 35
-        versionCode 9
-        versionName "1.0.2"
+        versionCode 10
+        versionName "1.0.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -29,6 +29,10 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        fdroid {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
