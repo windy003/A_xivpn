@@ -1,0 +1,24 @@
+XiVPN is a GUI client for XTLS/Xray-Core, which provides anti-censorship proxy protocols.
+
+Features:
+- Fetch proxies from subscription links
+- Easy to use GUI
+- Configurable proxy settings
+- Fully open source
+
+Supported protocols:
+- VLESS
+- VMESS
+- Shadowsocks
+- Trojan
+- Wireguard
+
+Supported transport protocols:
+- Websocket
+- QUIC
+- Httpupgrade
+- XHTTP
+
+Supported security protocols:
+- TLS / uTLS
+- REALITY
