@@ -18,7 +18,7 @@ android {
 
 
     signingConfigs {
-        release {
+        githubaction {
             storeFile file("../sign/keystore.jks")
             storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
             keyAlias System.getenv("RELEASE_KEYSTORE_ALIAS")
@@ -26,17 +26,7 @@ android {
         }
     }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        fdroid {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -52,23 +42,41 @@ android {
     flavorDimensions += "version"
     productFlavors {
         universal {
+            signingConfig signingConfigs.githubaction
             ndk {
                 abiFilters "arm64-v8a", "x86_64"
             }
         }
 
         x86_64 {
+            signingConfig signingConfigs.githubaction
             ndk {
                 abiFilters "x86_64"
             }
         }
 
         arm64_v8a {
+            signingConfig signingConfigs.githubaction
             ndk {
                 abiFilters "arm64-v8a"
             }
         }
+
+        fdroid {
+            ndk {
+                abiFilters "arm64-v8a", "x86_64"
+            }
+        }
+
     }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
 
 }
 
