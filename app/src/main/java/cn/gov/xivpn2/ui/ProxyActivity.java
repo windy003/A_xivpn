@@ -45,7 +45,6 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
 
     private final static String TAG = "ProxyActivity";
 
-    private RecyclerView recyclerView;
     private ProxyEditTextAdapter adapter;
 
     private String label;
@@ -74,7 +73,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         getSupportActionBar().setTitle(label);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ProxyEditTextAdapter();
         recyclerView.setAdapter(adapter);
@@ -379,10 +378,9 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                         adapter.addInputAfter("NETWORK", "NETWORK_HTTPUPGRADE_HOST", "HttpUpgrade Host");
                         break;
                     case "xhttp":
-                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_SEPARATE_DOWNLOAD", "XHTTP Separate Download", List.of("False", "True"));
                         adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_HOST", "XHTTP Host", "");
                         adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_PATH", "XHTTP Path", "/");
-                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_MODE", "XHTTP Mode", List.of("packet-up", "stream-up"));
+                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_MODE", "XHTTP Mode", List.of("packet-up", "stream-up", "auto", "stream-one"));
                 }
                 break;
             case "NETWORK_QUIC_SECURITY":
@@ -407,6 +405,18 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                 }
                 break;
 
+            case "NETWORK_XHTTP_MODE":
+                if (!value.equals("stream-one")) {
+                    if (!adapter.exists("NETWORK_XHTTP_SEPARATE_DOWNLOAD")) {
+                        adapter.addInputAfter("NETWORK", "NETWORK_XHTTP_SEPARATE_DOWNLOAD", "XHTTP Separate Download", List.of("False", "True"));
+                    }
+                } else {
+                    adapter.removeInput("NETWORK_XHTTP_SEPARATE_DOWNLOAD");
+                    adapter.removeInputByPrefix("NETWORK_XHTTP_DOWNLOAD_");
+                    xhttpDownload = "";
+                }
+                break;
+
             case "NETWORK_XHTTP_SEPARATE_DOWNLOAD":
                 adapter.removeInputByPrefix("NETWORK_XHTTP_DOWNLOAD_BTN");
                 adapter.removeInputByPrefix("NETWORK_XHTTP_DOWNLOAD_ADDRESS");
@@ -424,6 +434,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                 } else {
                     xhttpDownload = "";
                 }
+                break;
         }
     }
 
