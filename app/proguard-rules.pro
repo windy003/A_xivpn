@@ -22,3 +22,9 @@
 
 -keep class cn.gov.xivpn2.xrayconfig.** { *; }
 -keep class cn.gov.xivpn2.LibXivpn { *; }
+
+-keep class com.google.gson.reflect.TypeToken
+-keep class * extends com.google.gson.reflect.TypeToken
+-keep class com.google.common.reflect.TypeToken
+-keep class * extends com.google.common.reflect.TypeToken
+-keep public class * implements java.lang.reflect.Type
