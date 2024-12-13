@@ -21,9 +21,16 @@ Or download from [Github releases](https://github.com/Exclude0122/xivpn/releases
 
 ## Screenshots
 
+<details>
+  <summary>Expand</summary>
+
 ![Home page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
 ![Proxies page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
 ![Proxy settings page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png)
+
+
+</details>
+
 
 ## Notes to developers
 
