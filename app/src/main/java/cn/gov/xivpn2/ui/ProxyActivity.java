@@ -386,7 +386,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             case "NETWORK_QUIC_SECURITY":
                 if (value.equals("none")) {
                     adapter.removeInput("NETWORK_QUIC_KEY");
-                } else {
+                } else if (!adapter.exists("NETWORK_QUIC_KEY")) {
                     adapter.addInputAfter("NETWORK", "NETWORK_QUIC_KEY", "QUIC Encryption Key");
                 }
                 break;
