@@ -43,8 +43,8 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public int getItemViewType(int position) {
-        if (inputs.get(position).isButton) return 2;
-        return inputs.get(position).isSelect() ? 0 : 1;
+        if (inputs.get(position) instanceof ButtonInput) return 2;
+        return inputs.get(position) instanceof SelectInput ? 0 : 1;
     }
 
     /**
@@ -83,47 +83,47 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public void addInput(String key, String label) {
-        this.addInput(new Input(key, label, "", Collections.emptyList()));
+        this.addInput(new TextInput(key, label, ""));
     }
 
     @Override
     public void addInput(String key, String label, String defaultValue) {
-        this.addInput(new Input(key, label, "", Collections.emptyList(), defaultValue));
+        this.addInput(new TextInput(key, label, "", defaultValue));
     }
 
     @Override
     public void addInput(String key, String label, String defaultValue, String helperText) {
-        this.addInput(new Input(key, label, helperText, Collections.emptyList(), defaultValue));
+        this.addInput(new TextInput(key, label, helperText, defaultValue));
     }
 
     @Override
     public void addInput(String key, String label, List<String> selections) {
-        this.addInput(new Input(key, label, "", selections));
+        this.addInput(new SelectInput(key, label, "", selections));
     }
 
     @Override
     public void addInputAfter(String after, String key, String label) {
-        this.addInputAfter(after, new Input(key, label, "", Collections.emptyList()));
+        this.addInputAfter(after, new TextInput(key, label, ""));
     }
 
     @Override
     public void addInputAfter(String after, String key, String label, Runnable onClick) {
-        this.addInputAfter(after, new Input(key, label, onClick));
+        this.addInputAfter(after, new ButtonInput(key, label, "", onClick));
     }
 
     @Override
     public void addInputAfter(String after, String key, String label, String defaultValue) {
-        this.addInputAfter(after, new Input(key, label, "", Collections.emptyList(), defaultValue));
+        this.addInputAfter(after, new TextInput(key, label, "", defaultValue));
     }
 
     @Override
     public void addInputAfter(String after, String key, String label, String defaultValue, String helperText) {
-        this.addInputAfter(after, new Input(key, label, helperText, Collections.emptyList(), defaultValue));
+        this.addInputAfter(after, new TextInput(key, label, helperText, defaultValue));
     }
 
     @Override
     public void addInputAfter(String after, String key, String label, List<String> selections) {
-        this.addInputAfter(after, new Input(key, label, "", selections));
+        this.addInputAfter(after, new SelectInput(key, label, "", selections));
     }
 
     /**
@@ -176,52 +176,59 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder h, int position) {
-        Input input = inputs.get(position);
 
         if (h instanceof EditTextViewHolder) {
+            TextInput input = ((TextInput) inputs.get(position));
+
             EditTextViewHolder holder = (EditTextViewHolder) h;
 
-            holder.setOnTextChangedListener(null);
+            holder.editText.setText(input.value);
+            holder.layout.setHint(input.title);
+            holder.layout.setHelperText(input.helperText);
+            if (input.validated) {
+                holder.layout.setError(null);
+            } else {
+                holder.layout.setError("Invalid value");
+            }
 
-            holder.setText(input.getText());
-            holder.setHint(input.getHint());
-            holder.setHelperText(input.getHelperText());
-            holder.setError(input.isValidated());
-
-            holder.setOnTextChangedListener(() -> {
-                input.setText(holder.getText());
+            holder.onTextChanged = () -> {
+                input.value = (Objects.requireNonNull(holder.editText.getText()).toString());
                 if (onInputChanged != null) {
-                    onInputChanged.accept(input.key, input.text);
+                    onInputChanged.accept(input.key, input.value);
                 }
-            });
+            };
         }
 
         if (h instanceof DropdownViewHolder) {
+            SelectInput input = ((SelectInput) inputs.get(position));
+
             DropdownViewHolder holder = (DropdownViewHolder) h;
-            holder.setOnTextChangedListener(null);
 
-            holder.setDropdown(input.getSelect());
-            holder.setText(input.getText());
-            holder.setHint(input.getHint());
-            holder.setHelperText(input.getHelperText());
-            holder.setContentDescription(input.getHint());
+            holder.onTextChanged = null;
 
-            holder.setOnTextChangedListener(() -> {
-                input.setText(holder.getText());
+            holder.editText.setAdapter(new NonFilterableArrayAdapter(holder.editText.getContext(), R.layout.list_item, input.selections));
+            holder.editText.setText(input.value);
+            holder.layout.setHint(input.title);
+            holder.layout.setHelperText(input.helperText);
+            holder.layout.setContentDescription(input.title);
+
+            holder.onTextChanged = () -> {
+                input.value = (holder.editText.getText().toString());
                 if (onInputChanged != null) {
-                    onInputChanged.accept(input.key, input.text);
+                    onInputChanged.accept(input.key, input.value);
                 }
-            });
+            };
         }
 
         if (h instanceof ButtonViewHolder) {
+            ButtonInput input = ((ButtonInput) inputs.get(position));
             ButtonViewHolder holder = (ButtonViewHolder) h;
             holder.btn.setOnClickListener(v -> {
-                input.onClick.run();
+                input.runnable.run();
             });
-            holder.btn.setText(input.hint);
+            holder.btn.setText(input.title);
             holder.btn.setError(null);
-            if (!input.isValidated()) {
+            if (!input.validated) {
                 holder.btn.setError("Invalid input");
             }
         }
@@ -232,7 +239,12 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     public String getValue(String key) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
-                return inputs.get(i).text;
+                if (inputs.get(i) instanceof TextInput) {
+                    return ((TextInput) inputs.get(i)).value;
+                } else if (inputs.get(i) instanceof SelectInput) {
+                    return ((SelectInput) inputs.get(i)).value;
+                }
+                return "";
             }
         }
         return "";
@@ -252,7 +264,11 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     public void setValue(String key, String value) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
-                inputs.get(i).text = value;
+                if (inputs.get(i) instanceof TextInput) {
+                    ((TextInput) inputs.get(i)).value = value;
+                } else if (inputs.get(i) instanceof SelectInput) {
+                    ((SelectInput) inputs.get(i)).value = value;
+                }
                 if (onInputChanged != null) onInputChanged.accept(key, value);
             }
         }
@@ -268,11 +284,18 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     public boolean validate(BiFunction<String, String, Boolean> consumer) {
         boolean valid = true;
         for (int i = 0; i < inputs.size(); i++) {
-            Boolean v = consumer.apply(inputs.get(i).key, inputs.get(i).text);
+            Boolean v = true;
+
+            if (inputs.get(i) instanceof TextInput) {
+                v = consumer.apply(inputs.get(i).key, ((TextInput) inputs.get(i)).value);
+            } else if (inputs.get(i) instanceof SelectInput) {
+                v = consumer.apply(inputs.get(i).key, ((SelectInput) inputs.get(i)).value);
+            }
+
             if (v != inputs.get(i).validated) {
                 this.notifyItemChanged(i);
             }
-            inputs.get(i).setValidated(v);
+            inputs.get(i).validated = v;
             if (!v) valid = false;
         }
         return valid;
@@ -282,7 +305,7 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     public void setValidated(String key, boolean b) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
-                inputs.get(i).setValidated(b);
+                inputs.get(i).validated = b;
                 this.notifyItemChanged(i);
             }
         }
@@ -301,35 +324,6 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             editText = itemView.findViewById(R.id.edittext);
             editText.addTextChangedListener(this);
         }
-
-        public void setOnTextChangedListener(Runnable onTextChanged) {
-            this.onTextChanged = onTextChanged;
-        }
-
-        public void setHint(String s) {
-            layout.setHint(s);
-        }
-
-        public void setDropdown(List<String> strings) {
-            editText.setAdapter(new NonFilterableArrayAdapter(editText.getContext(), R.layout.list_item, strings));
-        }
-
-        public void setHelperText(String s) {
-            layout.setHelperText(s);
-        }
-
-        public String getText() {
-            return Objects.requireNonNull(editText.getText()).toString();
-        }
-
-        public void setText(String s) {
-            editText.setText(s);
-        }
-
-        public void setContentDescription(String s) {
-            layout.setEndIconContentDescription(s);
-        }
-
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -375,29 +369,6 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             editText.addTextChangedListener(this);
         }
 
-        public void setHint(String s) {
-            layout.setHint(s);
-        }
-
-        public void setHelperText(String s) {
-            layout.setHelperText(s);
-        }
-
-        public void setError(boolean v) {
-            if (v) {
-                editText.setError(null);
-            } else {
-                editText.setError("Invalid value");
-            }
-        }
-
-        public String getText() {
-            return Objects.requireNonNull(editText.getText()).toString();
-        }
-
-        public void setText(String s) {
-            editText.setText(s);
-        }
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -416,89 +387,58 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             }
         }
 
-        public void setOnTextChangedListener(Runnable onTextChanged) {
-            this.onTextChanged = onTextChanged;
-        }
     }
 
     public static class Input {
-        private final String hint;
-        private final String key;
-        private final String helperText;
-        private final List<String> select;
-        private String text = "";
-        private boolean validated = true;
-        private String error;
-        private boolean isButton = false;
-        private Runnable onClick = null;
+        protected final String key;
+        protected final String title;
+        protected final String helperText;
+        protected boolean validated = true;
 
-        public Input(String key, String hint, String helperText, List<String> select) {
-            this.hint = hint;
+        public Input(String key, String title, String helperText) {
+            this.key = key;
+            this.title = title;
             this.helperText = helperText;
-            this.key = key;
-            this.select = select;
-            if (!select.isEmpty()) {
-                text = select.get(0);
-            }
-        }
-
-        public Input(String key, String hint, String helperText, List<String> select, String defaultValue) {
-            this(key, hint, helperText, select);
-            this.text = defaultValue;
-        }
-
-        public Input(String key, String hint, Runnable onClick) {
-            this.hint = hint;
-            this.key = key;
-            this.helperText = "";
-            this.select = Collections.emptyList();
-            this.isButton = true;
-            this.onClick = onClick;
-        }
-
-        public boolean isValidated() {
-            return validated;
-        }
-
-        public void setValidated(boolean validated) {
-            this.validated = validated;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
-        }
-
-        public boolean isSelect() {
-            return !select.isEmpty();
-        }
-
-        public List<String> getSelect() {
-            return select;
-        }
-
-        public String getHelperText() {
-            return helperText;
-        }
-
-        public String getHint() {
-            return hint;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
-
-        public String getKey() {
-            return key;
         }
     }
 
+    public static class TextInput extends Input {
+
+        protected String value = "";
+
+        public TextInput(String key, String title, String helperText) {
+            super(key, title, helperText);
+        }
+
+        public TextInput(String key, String title, String helperText, String defaultValue) {
+            super(key, title, helperText);
+            this.value = defaultValue;
+        }
+
+    }
+
+    public static class ButtonInput extends Input {
+        private final Runnable runnable;
+        public ButtonInput(String key, String title, String helperText, Runnable runnable) {
+            super(key, title, helperText);
+            if (runnable == null) {
+                throw new NullPointerException("ButtonInput null runnable");
+            }
+            this.runnable = runnable;
+        }
+
+    }
+
+    public static class SelectInput extends Input {
+
+        protected String value;
+        protected final List<String> selections;
+
+        public SelectInput(String key, String title, String helperText, List<String> selections) {
+            super(key, title, helperText);
+            this.selections = selections;
+            if (!selections.isEmpty()) value = selections.get(0);
+        }
+
+    }
 }
