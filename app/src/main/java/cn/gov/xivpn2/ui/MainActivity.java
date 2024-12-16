@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -223,6 +224,9 @@ public class MainActivity extends AppCompatActivity {
         Config config = new Config();
         config.inbounds = new ArrayList<>();
         config.outbounds = new ArrayList<>();
+
+        // logs
+        config.log.loglevel = PreferenceManager.getDefaultSharedPreferences(this).getString("log_level", "warning");
 
         // socks5 inbound
         Inbound socks5Inbound = new Inbound();

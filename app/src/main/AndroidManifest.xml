@@ -52,6 +52,17 @@
         <activity
             android:name=".ui.XHttpStreamActivity"
             android:exported="false" />
+        
+        <provider
+            android:authorities="io.github.exclude0122.xivpn.files"
+            android:name=".service.FilesProvider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
 
         <service
             android:name=".service.XiVPNService"
@@ -63,6 +74,7 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
+        
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="shortService"

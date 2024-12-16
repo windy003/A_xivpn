@@ -10,11 +10,15 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import cn.gov.xivpn2.LibXivpn;
 import cn.gov.xivpn2.NotificationID;
@@ -63,11 +67,20 @@ public class XiVPNService extends VpnService {
         }
         fileDescriptor = vpnBuilder.establish();
 
+        // logging
+        String logFile = "";
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("logs", false)) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault());
+            String datetime = sdf.format(new Date());
+            logFile = getDataDir().getAbsolutePath() + "/logs/" + datetime + ".txt";
+        }
+        Log.i(TAG, "log file " + logFile);
+
         // start libxivpn
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String xrayConfig = gson.toJson(config);
         Log.i(TAG, "xray config: " + xrayConfig);
-        String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.detachFd());
+        String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.detachFd(), logFile);
 
         status = Status.CONNECTED;
         if (listener != null) listener.onStatusChanged(status);

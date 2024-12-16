@@ -2,15 +2,41 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="@string/appearance" app:iconSpaceReserved="false">
-        <CheckBoxPreference
-            app:summary="@string/black_background_summary"
-            app:key="black_background"
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/vpn_settings">
+
+        <ListPreference
+            app:defaultValue="warning"
+            android:entries="@array/log_levels"
+            android:entryValues="@array/log_levels"
+            app:singleLineTitle="true"
+            android:title="@string/log_level"
             app:iconSpaceReserved="false"
-            android:title="@string/black_background" />
+            app:key="log_level" />
+
+        <CheckBoxPreference
+            app:defaultValue="false"
+            android:title="@string/logs"
+            app:iconSpaceReserved="false"
+            app:key="logs"
+            app:summary="@string/logs_summary" />
+
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/about" app:iconSpaceReserved="false">
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/appearance">
+        <CheckBoxPreference
+            android:title="@string/black_background"
+            app:iconSpaceReserved="false"
+            app:key="black_background"
+            app:summary="@string/black_background_summary" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/about">
 
         <Preference
             app:iconSpaceReserved="false"
@@ -35,14 +61,14 @@
             app:title="@string/open_source_licenses" />
 
         <Preference
-            app:iconSpaceReserved="false"
             android:title="@string/xray_version"
+            app:iconSpaceReserved="false"
             app:key="xray_version"
             app:summary="" />
 
         <Preference
-            app:iconSpaceReserved="false"
             android:title="@string/app_version"
+            app:iconSpaceReserved="false"
             app:key="app_version"
             app:summary="" />
 

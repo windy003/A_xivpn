@@ -42,4 +42,8 @@
     <string name="restart_to_apply">Restart the app for this setting to take effect</string>
     <string name="black_background_summary">Use pure black background in dark theme</string>
     <string name="app_version">App Version</string>
+    <string name="vpn_settings">VPN Settings</string>
+    <string name="log_level">Log Level</string>
+    <string name="logs">Write logs to disk</string>
+    <string name="logs_summary">"Write logs to files. To view log files, use a file explorer app (e.g. Material files) and add XiVPN as an external storage. "</string>
 </resources>

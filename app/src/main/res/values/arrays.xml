@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="log_levels">
+        <item>error</item>
+        <item>warning</item>
+        <item>info</item>
+        <item>debug</item>
+    </string-array>
+</resources>
