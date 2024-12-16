@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import cn.gov.xivpn2.LibXivpn;
@@ -38,6 +41,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });
 
         findPreference("xray_version").setSummary(LibXivpn.xivpn_version());
+
+        findPreference("black_background").setOnPreferenceChangeListener((preference, newValue) -> {
+            Toast.makeText(getContext(), R.string.restart_to_apply, Toast.LENGTH_SHORT).show();
+            return true;
+        });
     }
 
     private void openUrl(String url) {

@@ -35,6 +35,9 @@ public class ProxiesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        BlackBackground.apply(this);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_proxies);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {

@@ -18,7 +18,7 @@
     <string name="conflict_label">A proxy with this label already exists.</string>
     <string name="label_help_text">Enter a custom label for the new proxy</string>
     <string name="url">URL</string>
-    <string name="empty_label_or_url">Label and empty can not be empty.</string>
+    <string name="empty_label_or_url">Label and url can not be empty.</string>
     <string name="update">Update</string>
     <string name="refresh">Refresh</string>
     <string name="subscription_updating">Updating subscriptions…</string>
@@ -36,4 +36,9 @@
     <string name="open_source_licenses">Open Source Licenses</string>
     <string name="settings">Settings</string>
     <string name="xray_version">Xray Version</string>
+    <string name="about">About</string>
+    <string name="black_background">Black background</string>
+    <string name="appearance">Appearance</string>
+    <string name="restart_to_apply">Restart the app for this setting to take effect</string>
+    <string name="black_background_summary">Use pure black background in dark theme</string>
 </resources>

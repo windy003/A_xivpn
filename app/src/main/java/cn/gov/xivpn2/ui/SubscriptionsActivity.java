@@ -38,6 +38,9 @@ public class SubscriptionsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        BlackBackground.apply(this);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_subscriptions);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
