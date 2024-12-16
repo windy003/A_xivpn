@@ -40,6 +40,13 @@
             app:key="xray_version"
             app:summary="" />
 
+        <Preference
+            app:iconSpaceReserved="false"
+            android:title="@string/app_version"
+            app:key="app_version"
+            app:summary="" />
+
+
     </PreferenceCategory>
 
 </PreferenceScreen>

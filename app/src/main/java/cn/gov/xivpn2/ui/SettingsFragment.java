@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import cn.gov.xivpn2.BuildConfig;
 import cn.gov.xivpn2.LibXivpn;
 import cn.gov.xivpn2.R;
 
@@ -46,6 +47,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             Toast.makeText(getContext(), R.string.restart_to_apply, Toast.LENGTH_SHORT).show();
             return true;
         });
+
+        findPreference("app_version").setSummary(BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")");
     }
 
     private void openUrl(String url) {
