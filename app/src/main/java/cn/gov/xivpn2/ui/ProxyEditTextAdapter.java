@@ -64,14 +64,27 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             inputs.add(input);
             this.notifyItemInserted(size);
         }
+        if (onInputChanged != null) {
+            if (input instanceof SelectInput) {
+                onInputChanged.accept(input.key, ((SelectInput) input).value);
+            }
+        }
     }
 
     @Override
     public void addInputAfter(String key, Input input) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).key.equals(key)) {
+
                 inputs.add(i + 1, input);
                 this.notifyItemInserted(i + 1);
+
+                if (onInputChanged != null) {
+                    if (input instanceof SelectInput) {
+                        onInputChanged.accept(input.key, ((SelectInput) input).value);
+                    }
+                }
+
                 break;
             }
             if (inputs.get(i).key.equals(input.key)) {
