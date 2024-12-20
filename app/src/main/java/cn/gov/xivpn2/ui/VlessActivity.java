@@ -6,32 +6,24 @@ import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import cn.gov.xivpn2.Utils;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.VlessServerSettings;
 import cn.gov.xivpn2.xrayconfig.VlessSettings;
 import cn.gov.xivpn2.xrayconfig.VlessUser;
 
 public class VlessActivity extends ProxyActivity<VlessSettings> {
+
     @Override
-    protected boolean validate(IProxyEditor adapter) {
-        if (!super.validate(adapter)) {
-            return false;
+    protected boolean validateField(String key, String value) {
+        switch (key) {
+            case "ADDRESS":
+            case "UUID":
+                return !value.isEmpty();
+            case "PORT":
+                return Utils.isValidPort(value);
         }
-        return adapter.validate((k, v) -> {
-            if (k.equals("ADDRESS") || k.equals("UUID")) {
-                return !v.isEmpty();
-            }
-            if (k.equals("PORT")) {
-                if (v.isEmpty()) return false;
-                try {
-                    int i = Integer.parseInt(v);
-                    return i <= 65535 && i >= 1;
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            }
-            return true;
-        });
+        return super.validateField(key, value);
     }
 
     @Override

@@ -294,36 +294,9 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
 
     @Override
-    public boolean validate(BiFunction<String, String, Boolean> consumer) {
-        boolean valid = true;
-        for (int i = 0; i < inputs.size(); i++) {
-            Boolean v = true;
-
-            if (inputs.get(i) instanceof TextInput) {
-                v = consumer.apply(inputs.get(i).key, ((TextInput) inputs.get(i)).value);
-            } else if (inputs.get(i) instanceof SelectInput) {
-                v = consumer.apply(inputs.get(i).key, ((SelectInput) inputs.get(i)).value);
-            }
-
-            if (v != inputs.get(i).validated) {
-                this.notifyItemChanged(i);
-            }
-            inputs.get(i).validated = v;
-            if (!v) valid = false;
-        }
-        return valid;
+    public ArrayList<Input> getInputs() {
+        return inputs;
     }
-
-    @Override
-    public void setValidated(String key, boolean b) {
-        for (int i = 0; i < inputs.size(); i++) {
-            if (inputs.get(i).key.equals(key)) {
-                inputs.get(i).validated = b;
-                this.notifyItemChanged(i);
-            }
-        }
-    }
-
 
     public static class DropdownViewHolder extends RecyclerView.ViewHolder implements TextWatcher {
         private final TextInputLayout layout;

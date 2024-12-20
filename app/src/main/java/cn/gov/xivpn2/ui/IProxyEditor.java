@@ -79,14 +79,5 @@ public interface IProxyEditor {
 
     void setValue(String key, String value);
 
-    /**
-     * validate user input values
-     *
-     * @param consumer a function that takes a key-value pair and returns true if
-     *                 the user-provided value is valid
-     * @return true if all calls to consumer returns true
-     */
-    boolean validate(BiFunction<String, String, Boolean> consumer);
-
-    void setValidated(String key, boolean b);
+    List<ProxyEditTextAdapter.Input> getInputs();
 }

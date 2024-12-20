@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.gov.xivpn2.R;
+import cn.gov.xivpn2.Utils;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
 import cn.gov.xivpn2.database.ProxyDao;
@@ -120,7 +121,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
             // save
 
             // validation
-            if (validate(adapter)) {
+            if (validate()) {
                 Outbound<T> outbound = buildOutboundConfig(this.adapter);
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String json = gson.toJson(outbound);
@@ -160,24 +161,47 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    protected boolean validate(IProxyEditor adapter) {
-        if (adapter.exists("NETWORK_XHTTP_DOWNLOAD_PORT")) {
-            try {
-                int i = Integer.parseInt(adapter.getValue("NETWORK_XHTTP_DOWNLOAD_PORT"));
-                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_PORT", true);
-            } catch (NumberFormatException e) {
-                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_PORT", false);
-                return false;
+    /**
+     * Return true if all inputs are valid
+     */
+    private boolean validate() {
+        boolean valid = true;
+        for (int i = 0; i < adapter.getInputs().size(); i++) {
+            ProxyEditTextAdapter.Input input = adapter.getInputs().get(i);
+
+            boolean old = input.validated;
+
+            if (input instanceof ProxyEditTextAdapter.SelectInput) {
+                input.validated = validateField(input.key, ((ProxyEditTextAdapter.SelectInput) input).value);
+            } else if (input instanceof ProxyEditTextAdapter.TextInput) {
+                input.validated = validateField(input.key, ((ProxyEditTextAdapter.TextInput) input).value);
+            } else if (input instanceof ProxyEditTextAdapter.ButtonInput) {
+                input.validated = validateField(input.key, "");
             }
-        }
-        if (adapter.getValue("NETWORK_XHTTP_SEPARATE_DOWNLOAD").equals("True")) {
-            if (xhttpDownload.isEmpty()) {
-                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_BTN", false);
-                return false;
-            } else {
-                adapter.setValidated("NETWORK_XHTTP_DOWNLOAD_BTN", true);
+            if (!input.validated) {
+                valid = false;
             }
+            if (old != input.validated) {
+                adapter.notifyItemChanged(i);
+            }
+
         }
+        return valid;
+    }
+
+    protected boolean validateField(String key, String value) {
+        if (key.equals("NETWORK_XHTTP_DOWNLOAD_BTN") && adapter.getValue("NETWORK_XHTTP_SEPARATE_DOWNLOAD").equals("True")) {
+            return !xhttpDownload.isEmpty();
+        }
+        switch (key) {
+            case "SECURITY_REALITY_PUBLIC_KEY":
+            case "NETWORK_XHTTP_DOWNLOAD_ADDRESS":
+                return !value.isEmpty();
+            case "NETWORK_XHTTP_DOWNLOAD_PORT":
+                return Utils.isValidPort(value);
+        }
+
+
         return true;
     }
 

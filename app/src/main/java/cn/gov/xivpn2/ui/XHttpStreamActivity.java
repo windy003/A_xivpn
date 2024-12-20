@@ -17,11 +17,6 @@ public class XHttpStreamActivity extends ProxyActivity<XHttpSettings> {
     }
 
     @Override
-    protected boolean validate(IProxyEditor adapter) {
-        return super.validate(adapter);
-    }
-
-    @Override
     protected LinkedHashMap<String, String> decodeOutboundConfig(Outbound<XHttpSettings> outbound) {
         return super.decodeOutboundConfig(outbound);
     }

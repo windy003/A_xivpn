@@ -5,28 +5,23 @@ import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 
+import cn.gov.xivpn2.Utils;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.TrojanServerSettings;
 import cn.gov.xivpn2.xrayconfig.TrojanSettings;
 
 public class TrojanActivity extends ProxyActivity<TrojanSettings> {
+
     @Override
-    protected boolean validate(IProxyEditor adapter) {
-        return adapter.validate((k, v) -> {
-            if (k.equals("PASSWORD") || k.equals("ADDRESS")) {
-                return !v.isEmpty();
-            }
-            if (k.equals("PORT")) {
-                if (v.isEmpty()) return false;
-                try {
-                    int i = Integer.parseInt(v);
-                    return i <= 65535 && i >= 1;
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            }
-            return true;
-        });
+    protected boolean validateField(String key, String value) {
+        switch (key) {
+            case "ADDRESS":
+            case "PASSWORD":
+                return !value.isEmpty();
+            case "PORT":
+                return Utils.isValidPort(value);
+        }
+        return super.validateField(key, value);
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.gov.xivpn2.Utils;
 import cn.gov.xivpn2.xrayconfig.Outbound;
 import cn.gov.xivpn2.xrayconfig.WireguardPeer;
 import cn.gov.xivpn2.xrayconfig.WireguardSettings;
@@ -15,18 +16,19 @@ public class WireguardActivity extends ProxyActivity<WireguardSettings> {
 
     private static final Pattern RESERVED_PATTERN = Pattern.compile("^\\d{1,3},\\d{1,3},\\d{1,3}$");
 
+
     @Override
-    protected boolean validate(IProxyEditor adapter) {
-        return adapter.validate((k, v) -> {
-            if (k.equals("PRIVATE_KEY") || k.equals("PEER_ENDPOINT") || k.equals("PEER_PUBLIC_KEY")) {
-                return !v.isEmpty();
-            }
-            if (k.equals("RESERVED")) {
-                Matcher matcher = RESERVED_PATTERN.matcher(v);
-                return matcher.find();
-            }
-            return true;
-        });
+    protected boolean validateField(String key, String value) {
+        switch (key) {
+            case "PRIVATE_KEY":
+            case "PEER_ENDPOINT":
+            case "PEER_PUBLIC_KEY":
+            case "ADDRESS1":
+                return !value.isEmpty();
+            case "RESERVED_PATTERN":
+                return RESERVED_PATTERN.matcher(value).find();
+        }
+        return super.validateField(key, value);
     }
 
     @Override
