@@ -22,7 +22,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
         findPreference("feedback").setOnPreferenceClickListener(preference -> {
-            openUrl("https://github.com/Exclude0122/xivpn/issues/new?title=Crash&body=");
+            openUrl("https://github.com/Exclude0122/xivpn/issues/new");
             return true;
         });
 

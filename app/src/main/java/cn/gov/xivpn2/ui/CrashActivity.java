@@ -16,24 +16,33 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.common.net.UrlEscapers;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 import cn.gov.xivpn2.BuildConfig;
 import cn.gov.xivpn2.R;
 
 public class CrashActivity extends AppCompatActivity {
 
-    private static @NonNull StringBuilder getMessage(String exception) {
+    private static @NonNull String getMessage(String exception) {
         StringBuilder sb = new StringBuilder();
         sb.append("Please report this issue to the developers.\n");
         sb.append("Android Release: ").append(Build.VERSION.RELEASE).append("\n");
         sb.append("Android SDK: ").append(Build.VERSION.SDK_INT).append("\n");
         sb.append("Device: ").append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n");
+        sb.append("Supported ABIs: ").append(String.join(", ", Build.SUPPORTED_ABIS)).append("\n");
         sb.append("App Version: ").append(BuildConfig.VERSION_NAME).append(" (").append(BuildConfig.VERSION_CODE).append(")\n");
         sb.append("\n");
+
 
         sb.append("Exception:\n");
         sb.append(exception);
 
-        return sb;
+        return sb.toString();
     }
 
     @Override
@@ -56,19 +65,19 @@ public class CrashActivity extends AppCompatActivity {
             exception = "NULL EXCEPTION";
         }
 
-        StringBuilder sb = getMessage(exception);
+        String crashReport = getMessage(exception);
 
         TextView textView = findViewById(R.id.textview);
-        textView.setText(sb.toString());
-        textView.setHorizontallyScrolling(true);
+        textView.setText(crashReport);
 
         Button btn = findViewById(R.id.btn_report);
         btn.setOnClickListener(v -> {
             try {
-                String uriString = "https://github.com/Exclude0122/xivpn/issues/new?title=Crash&body=";
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriString));
+                String url = "https://github.com/Exclude0122/xivpn/issues/new?title=Crash&body=" + URLEncoder.encode(crashReport, "UTF-8");
+                Log.d("CrashActivity", "open " + url);
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(browserIntent);
-            } catch (ActivityNotFoundException e) {
+            } catch (ActivityNotFoundException | UnsupportedEncodingException e) {
                 Log.e("CrashActivity", "open browser", e);
             }
         });
