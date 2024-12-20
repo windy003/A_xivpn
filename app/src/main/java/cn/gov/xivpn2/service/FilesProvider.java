@@ -8,6 +8,7 @@ import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract.Root;
 import android.provider.DocumentsProvider;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -19,6 +20,8 @@ import java.util.Objects;
 import cn.gov.xivpn2.R;
 
 public class FilesProvider extends DocumentsProvider {
+
+    private static final String TAG = "FilesProvider";
 
     private static final String[] DEFAULT_ROOT_PROJECTION =
             new String[]{Root.COLUMN_ROOT_ID, Root.COLUMN_ICON, Root.COLUMN_TITLE, Root.COLUMN_DOCUMENT_ID, Root.COLUMN_FLAGS};
@@ -47,6 +50,8 @@ public class FilesProvider extends DocumentsProvider {
 
     @Override
     public Cursor queryDocument(String documentId, String[] projection) throws FileNotFoundException {
+        Log.d(TAG, "queryDocument " + documentId);
+
         if (projection == null) projection = DEFAULT_DOCUMENT_PROJECTION;
 
         if (documentId.contains("..")) {
@@ -54,6 +59,10 @@ public class FilesProvider extends DocumentsProvider {
         }
 
         File file = new File(base.getAbsolutePath() + documentId);
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("file does not exist");
+        }
 
         MatrixCursor cursor = new MatrixCursor(projection);
         MatrixCursor.RowBuilder row = cursor.newRow();
@@ -72,6 +81,8 @@ public class FilesProvider extends DocumentsProvider {
 
     @Override
     public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder) throws FileNotFoundException {
+        Log.d(TAG, "queryChildDocuments " + parentDocumentId);
+
         if (projection == null) projection = DEFAULT_DOCUMENT_PROJECTION;
 
         if (parentDocumentId.contains("..")) {
@@ -81,6 +92,10 @@ public class FilesProvider extends DocumentsProvider {
         MatrixCursor cursor = new MatrixCursor(projection);
 
         File f = new File(base.getAbsolutePath() + parentDocumentId);
+
+        if (!f.exists()) {
+            throw new FileNotFoundException("file does not exist");
+        }
 
         for (File file : Objects.requireNonNull(f.listFiles())) {
 
@@ -102,28 +117,115 @@ public class FilesProvider extends DocumentsProvider {
     }
 
     @Override
+    public void deleteDocument(String documentId) throws FileNotFoundException {
+        Log.d(TAG, "deleteDocument " + documentId);
+
+        if (documentId.contains("..")) {
+            throw new FileNotFoundException("illegal file name");
+        }
+
+        File file = new File(base.getAbsolutePath() + documentId);
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("file does not exist");
+        }
+
+        deleteFile(file);
+    }
+
+    @Override
     public boolean isChildDocument(String parentDocumentId, String documentId) {
+        Log.d(TAG, "isChildDocument " + parentDocumentId + ", " + documentId);
+
         return documentId.startsWith(parentDocumentId);
     }
 
     @Override
     public ParcelFileDescriptor openDocument(String documentId, String mode, @Nullable CancellationSignal signal) throws FileNotFoundException {
+        Log.d(TAG, "openDocument " + documentId + " " + mode);
+
         if (documentId.contains("..")) {
             throw new FileNotFoundException("illegal file name");
         }
 
-        if (!mode.equals("r")){
-            throw new FileNotFoundException("read only");
+        File file = new File(base.getAbsolutePath() + documentId);
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("file does not exist");
+        }
+
+        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.parseMode(mode));
+    }
+
+    @Override
+    public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
+        Log.d(TAG, "renameDocument " + documentId + " " + displayName);
+
+        if (documentId.contains("..") || displayName.contains("..")) {
+            throw new FileNotFoundException("illegal file name");
         }
 
         File file = new File(base.getAbsolutePath() + documentId);
-        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.parseMode(mode));
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("file does not exist");
+        }
+
+        File dest = new File(file.getParentFile(), displayName);
+
+        if (dest.exists()) {
+            throw new FileNotFoundException("file with same name already exists");
+        }
+
+        if (!file.renameTo(dest)) {
+            throw new FileNotFoundException("rename failed");
+        }
+
+        return dest.getAbsolutePath().substring(base.getAbsolutePath().length());
+    }
+
+    @Override
+    public String createDocument(String parentDocumentId, String mimeType, String displayName) throws FileNotFoundException {
+        Log.d(TAG, "createDocument " + parentDocumentId + " " + mimeType + " " + displayName);
+
+        if (parentDocumentId.contains("..") || displayName.contains("..")) {
+            throw new FileNotFoundException("illegal file name");
+        }
+
+        File file = new File(base.getAbsolutePath() + parentDocumentId + "/" + displayName);
+        if (file.exists()) {
+            throw new FileNotFoundException("file already exists");
+        }
+
+        try {
+            if (mimeType.equals("vnd.android.document/directory")) {
+                file.mkdirs();
+            } else {
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            throw new FileNotFoundException("IOException: " + e);
+        }
+
+        return parentDocumentId + "/" + displayName;
     }
 
     @Override
     public boolean onCreate() {
         base = new File(Objects.requireNonNull(getContext()).getDataDir(), "logs");
         base.mkdirs();
+        Log.d(TAG, "base " + base.getAbsolutePath());
         return true;
+    }
+
+
+    public static void deleteFile(File f) {
+        Log.d(TAG, "delete " + f.getAbsolutePath());
+        if (f.isDirectory()) {
+            for (File sub : Objects.requireNonNull(f.listFiles())) {
+                deleteFile(sub);
+            }
+        }
+        f.delete();
     }
 }
