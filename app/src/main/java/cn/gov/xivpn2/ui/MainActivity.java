@@ -10,8 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.Html;
-import android.view.Menu;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -24,33 +23,44 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.preference.PreferenceManager;
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
+import cn.gov.xivpn2.database.Rules;
 import cn.gov.xivpn2.service.XiVPNService;
 import cn.gov.xivpn2.xrayconfig.Config;
 import cn.gov.xivpn2.xrayconfig.Inbound;
 import cn.gov.xivpn2.xrayconfig.Outbound;
+import cn.gov.xivpn2.xrayconfig.Routing;
+import cn.gov.xivpn2.xrayconfig.RoutingRule;
+import cn.gov.xivpn2.xrayconfig.Sniffing;
 
 public class MainActivity extends AppCompatActivity {
 
-    private MaterialButton btn;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
     private MaterialSwitch aSwitch;
     private TextView textView;
     private XiVPNService.XiVPNBinder binder;
     private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
+
     private final ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -95,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         textView.setText("");
         SharedPreferences sp = getSharedPreferences("XIVPN", MODE_PRIVATE);
-        btn.setText(sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)"));
     }
 
     @Override
@@ -116,7 +125,8 @@ public class MainActivity extends AppCompatActivity {
         // bind views
         textView = findViewById(R.id.textview);
         aSwitch = findViewById(R.id.vpn_switch);
-        btn = findViewById(R.id.btn_report);
+        drawerLayout = findViewById(R.id.main);
+        navigationView = findViewById(R.id.navView);
 
         onCheckedChangeListener = (compoundButton, b) -> {
             if (b) {
@@ -160,27 +170,25 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        btn.setOnClickListener(v -> {
-            startActivity(new Intent(this, ProxiesActivity.class));
+        // drawer
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.baseline_menu_24);
+        navigationView.setNavigationItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.proxies) {
+                startActivity(new Intent(this, ProxiesActivity.class));
+            }
+            if (item.getItemId() == R.id.subscriptions) {
+                startActivity(new Intent(this, SubscriptionsActivity.class));
+            }
+            if (item.getItemId() == R.id.settings) {
+                startActivity(new Intent(this, PreferenceActivity.class));
+            }
+            if (item.getItemId() == R.id.rules) {
+                startActivity(new Intent(this, RulesActivity.class));
+            }
+            drawerLayout.close();
+            return false;
         });
-
-        // show privacy policy
-        if (!getSharedPreferences("XIVPN", MODE_PRIVATE).getBoolean("NEVER_SHOW_PRIVACY_POLICY", false)) {
-            TextView textView = new TextView(this);
-            textView.setTextIsSelectable(true);
-            textView.setText(Html.fromHtml(getString(R.string.privacy_policy_content), Html.FROM_HTML_MODE_COMPACT));
-
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.privacy_policy)
-                    .setView(textView)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.ok, null)
-                    .setNeutralButton(R.string.never_show_again, (dialog, which) -> {
-                        SharedPreferences sp = getSharedPreferences("XIVPN", MODE_PRIVATE);
-                        sp.edit().putBoolean("NEVER_SHOW_PRIVACY_POLICY", true).apply();
-                    })
-                    .show();
-        }
     }
 
     /**
@@ -202,18 +210,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_activity, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if (item.getItemId() == R.id.subscriptions) {
-            startActivity(new Intent(this, SubscriptionsActivity.class));
-        } else if (item.getItemId() == R.id.settings) {
-            startActivity(new Intent(this, PreferenceActivity.class));
+        // drawer
+        if (item.getItemId() == android.R.id.home) {
+            if (drawerLayout.isOpen()) {
+                drawerLayout.close();
+            } else {
+                drawerLayout.open();
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -224,8 +229,10 @@ public class MainActivity extends AppCompatActivity {
         config.inbounds = new ArrayList<>();
         config.outbounds = new ArrayList<>();
 
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         // logs
-        config.log.loglevel = PreferenceManager.getDefaultSharedPreferences(this).getString("log_level", "warning");
+        config.log.loglevel = preferences.getString("log_level", "warning");
 
         // socks5 inbound
         Inbound socks5Inbound = new Inbound();
@@ -234,18 +241,50 @@ public class MainActivity extends AppCompatActivity {
         socks5Inbound.listen = "10.89.64.1";
         socks5Inbound.settings = new HashMap<>();
         socks5Inbound.settings.put("udp", true);
+
+        socks5Inbound.sniffing = new Sniffing();
+        socks5Inbound.sniffing.enabled = preferences.getBoolean("sniffing", true);
+        socks5Inbound.sniffing.destOverride = List.of("http", "tls");
+        socks5Inbound.sniffing.routeOnly = preferences.getBoolean("sniffing_route_only", true);
+
         config.inbounds.add(socks5Inbound);
 
-        // outbound
-        SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-        String label = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-        String subscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
-        Proxy proxy = AppDatabase.getInstance().proxyDao().find(label, subscription);
+        try {
 
-        Gson gson = new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
-        Outbound<?> outbound = gson.fromJson(proxy.config, Outbound.class);
+            // routing
+            List<RoutingRule> rules = Rules.readRules(getFilesDir());
 
-        config.outbounds.add(outbound);
+            config.routing = new Routing();
+            config.routing.rules = rules;
+
+            // outbound
+            HashSet<Long> proxyIds = new HashSet<>();
+
+            for (RoutingRule rule : rules) {
+                long id = AppDatabase.getInstance().proxyDao().find(rule.outboundLabel, rule.outboundSubscription).id;
+                Log.d("MainActivity", "build xray config: add proxy: " + id + " | " + rule.outboundLabel + " | " + rule.outboundSubscription);
+                proxyIds.add(id);
+
+                rule.outboundTag = String.format("#%d %s (%s)", id, rule.outboundLabel, rule.outboundSubscription);
+                if (rule.domain.isEmpty()) rule.domain = null;
+                if (rule.ip.isEmpty()) rule.ip = null;
+                if (rule.port.isEmpty()) rule.port = null;
+                if (rule.protocol.isEmpty()) rule.protocol = null;
+                rule.outboundLabel = null;
+                rule.outboundSubscription = null;
+                rule.label = null;
+            }
+
+            for (Long id : proxyIds) {
+                Proxy proxy = AppDatabase.getInstance().proxyDao().findById(id);
+                Gson gson = new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
+                Outbound<?> outbound = gson.fromJson(proxy.config, Outbound.class);
+                outbound.tag = String.format("#%d %s (%s)", id, proxy.label, proxy.subscription);
+                config.outbounds.add(outbound);
+            }
+        } catch (IOException e) {
+            Log.wtf("MainActivity", "build xray config", e);
+        }
 
         return config;
     }

@@ -7,4 +7,5 @@ public class Inbound {
     public String listen;
     public int port;
     public Map<String, Object> settings;
+    public Sniffing sniffing;
 }

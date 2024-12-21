@@ -3,6 +3,7 @@ package cn.gov.xivpn2.ui;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,8 +26,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.IOException;
+
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
+import cn.gov.xivpn2.database.Rules;
 import cn.gov.xivpn2.database.Subscription;
 import cn.gov.xivpn2.service.SubscriptionWork;
 
@@ -115,16 +119,10 @@ public class SubscriptionsActivity extends AppCompatActivity {
                         AppDatabase.getInstance().proxyDao().deleteBySubscription(subscription.label);
                         AppDatabase.getInstance().subscriptionDao().delete(subscription.label);
 
-                        // check if selected subscription is deleted
-                        // if so, set to default
-                        SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-                        String selectedLabel = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-                        String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
-                        if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
-                            SharedPreferences.Editor edit = sp.edit();
-                            edit.putString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-                            edit.putString("SELECTED_SUBSCRIPTION", "none");
-                            edit.apply();
+                        try {
+                            Rules.resetDeletedProxies(getApplicationContext().getFilesDir());
+                        } catch (IOException e) {
+                            Log.e("SubscriptionsActivity", "reset deleted proxies", e);
                         }
 
                         refresh();

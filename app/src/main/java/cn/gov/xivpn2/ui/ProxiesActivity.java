@@ -1,9 +1,8 @@
 package cn.gov.xivpn2.ui;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,8 +22,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.IOException;
+
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
+import cn.gov.xivpn2.database.Rules;
 
 public class ProxiesActivity extends AppCompatActivity {
 
@@ -57,51 +59,23 @@ public class ProxiesActivity extends AppCompatActivity {
 
         // on list item clicked
         adapter.setOnLongClickListener((view, proxy, i) -> {
-            if (proxy.protocol.equals("freedom")) {
-                // freedom is not removable and editable
+            if (proxy.protocol.equals("freedom") || proxy.protocol.equals("blackhole")) {
+                // freedom and blackhole is not removable and editable
                 return;
             }
 
             PopupMenu popupMenu = new PopupMenu(this, view);
             popupMenu.inflate(R.menu.proxies_popup);
             popupMenu.setOnMenuItemClickListener(item -> {
-                if (item.getItemId() == R.id.edit) {
-
-                    // edit
-                    Class<? extends AppCompatActivity> cls = null;
-                    if (proxy.protocol.equals("shadowsocks")) {
-                        cls = ShadowsocksActivity.class;
-                    } else if (proxy.protocol.equals("vmess")) {
-                        cls = VmessActivity.class;
-                    } else if (proxy.protocol.equals("vless")) {
-                        cls = VlessActivity.class;
-                    } else if (proxy.protocol.equals("trojan")) {
-                        cls = TrojanActivity.class;
-                    } else if (proxy.protocol.equals("wireguard")) {
-                        cls = WireguardActivity.class;
-                    }
-
-                    Intent intent = new Intent(this, cls);
-                    intent.putExtra("LABEL", proxy.label);
-                    intent.putExtra("SUBSCRIPTION", proxy.subscription);
-                    intent.putExtra("CONFIG", proxy.config);
-                    startActivity(intent);
-
-                } else if (item.getItemId() == R.id.delete) {
+                if (item.getItemId() == R.id.delete) {
 
                     // delete
                     AppDatabase.getInstance().proxyDao().delete(proxy.label, proxy.subscription);
 
-                    // check if selected subscription is deleted
-                    // if so, set to default
-                    SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-                    String selectedLabel = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-                    String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
-                    if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
-                        SharedPreferences.Editor edit = sp.edit();
-                        edit.putString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-                        edit.putString("SELECTED_SUBSCRIPTION", "none");
-                        edit.commit();
+                    try {
+                        Rules.resetDeletedProxies(getApplicationContext().getFilesDir());
+                    } catch (IOException e) {
+                        Log.e("ProxiesActivity", "reset deleted proxies", e);
                     }
 
                     refresh();
@@ -114,15 +88,34 @@ public class ProxiesActivity extends AppCompatActivity {
         });
 
         adapter.setOnClickListener((view, proxy, i) -> {
+            // edit
+            Class<? extends AppCompatActivity> cls = null;
+            switch (proxy.protocol) {
+                case "shadowsocks":
+                    cls = ShadowsocksActivity.class;
+                    break;
+                case "vmess":
+                    cls = VmessActivity.class;
+                    break;
+                case "vless":
+                    cls = VlessActivity.class;
+                    break;
+                case "trojan":
+                    cls = TrojanActivity.class;
+                    break;
+                case "wireguard":
+                    cls = WireguardActivity.class;
+                    break;
+                default:
+                    // not editable
+                    return;
+            }
 
-            // select
-            SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-            SharedPreferences.Editor edit = sp.edit();
-            edit.putString("SELECTED_LABEL", proxy.label);
-            edit.putString("SELECTED_SUBSCRIPTION", proxy.subscription);
-            edit.apply();
-
-            adapter.setSelectedProxy(proxy.label, proxy.subscription);
+            Intent intent = new Intent(this, cls);
+            intent.putExtra("LABEL", proxy.label);
+            intent.putExtra("SUBSCRIPTION", proxy.subscription);
+            intent.putExtra("CONFIG", proxy.config);
+            startActivity(intent);
         });
 
     }
@@ -136,11 +129,6 @@ public class ProxiesActivity extends AppCompatActivity {
     private void refresh() {
         adapter.clear();
         adapter.addProxies(AppDatabase.getInstance().proxyDao().findAll());
-
-        SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-        String label = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-        String subscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
-        adapter.setSelectedProxy(label, subscription);
 
     }
 

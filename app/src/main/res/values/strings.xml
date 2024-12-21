@@ -46,4 +46,19 @@
     <string name="log_level">Log Level</string>
     <string name="logs">Write logs to disk</string>
     <string name="logs_summary">"Write logs to files. To view log files, use a file explorer app (e.g. Material files) and add XiVPN as an external storage. "</string>
+    <string name="rules">Rules</string>
+    <string name="invisible">Invisible</string>
+    <string name="edit_rule">Edit rule</string>
+    <string name="domains">Domains</string>
+    <string name="one_per_line">One per line</string>
+    <string name="ips">IPs</string>
+    <string name="port">Port</string>
+    <string name="network">Network</string>
+    <string name="protocol">Protocols</string>
+    <string name="outbound">Outbound</string>
+    <string name="new_rule">New Rule</string>
+    <string name="sniffing">Sniffing</string>
+    <string name="sniffing_summary">Sniffing domains from traffic data and replace the destination address by the sniffed domain.</string>
+    <string name="sniffing_route_only">Sniffing route only</string>
+    <string name="sniffing_route_only_summary">Keep the original destination address and only use sniffed domain for routing.</string>
 </resources>

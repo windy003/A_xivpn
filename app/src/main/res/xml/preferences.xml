@@ -22,6 +22,20 @@
             app:key="logs"
             app:summary="@string/logs_summary" />
 
+        <CheckBoxPreference
+            app:defaultValue="true"
+            android:title="@string/sniffing"
+            app:iconSpaceReserved="false"
+            app:key="sniffing"
+            app:summary="@string/sniffing_summary" />
+
+        <CheckBoxPreference
+            app:defaultValue="true"
+            android:title="@string/sniffing_route_only"
+            app:iconSpaceReserved="false"
+            app:key="sniffing_route_only"
+            app:summary="@string/sniffing_route_only_summary" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

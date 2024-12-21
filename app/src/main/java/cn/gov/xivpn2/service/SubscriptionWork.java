@@ -17,6 +17,7 @@ import androidx.work.WorkerParameters;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -30,6 +31,7 @@ import cn.gov.xivpn2.NotificationID;
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
+import cn.gov.xivpn2.database.Rules;
 import cn.gov.xivpn2.database.Subscription;
 import cn.gov.xivpn2.xrayconfig.HttpUpgradeSettings;
 import cn.gov.xivpn2.xrayconfig.Outbound;
@@ -148,16 +150,10 @@ public class SubscriptionWork extends Worker {
 
         }
 
-        // check if selected subscription is deleted
-        // if so, set to default
-        SharedPreferences sp = getApplicationContext().getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
-        String selectedLabel = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-        String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
-        if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
-            SharedPreferences.Editor edit = sp.edit();
-            edit.putString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
-            edit.putString("SELECTED_SUBSCRIPTION", "none");
-            edit.apply();
+        try {
+            Rules.resetDeletedProxies(getApplicationContext().getFilesDir());
+        } catch (IOException e) {
+            Log.e(TAG, "reset deleted proxies", e);
         }
 
         Log.i(TAG, "doWork finish");

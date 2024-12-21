@@ -8,7 +8,7 @@ import java.util.List;
 
 @Dao
 public interface ProxyDao {
-    @Query("SELECT * FROM proxy")
+    @Query("SELECT * FROM proxy ORDER BY id ASC")
     List<Proxy> findAll();
 
     @Query("SELECT * FROM proxy WHERE subscription = :subscription")
@@ -23,6 +23,9 @@ public interface ProxyDao {
     @Query("INSERT OR IGNORE INTO proxy (label, protocol, subscription, config) VALUES ('No Proxy (Bypass Mode)', 'freedom', 'none', '{\"protocol\": \"freedom\"}')")
     void addFreedom();
 
+    @Query("INSERT OR IGNORE INTO proxy (label, protocol, subscription, config) VALUES ('Block', 'blackhole', 'none', '{\"protocol\": \"blackhole\"}')")
+    void addBlackhole();
+
     @Query("SELECT count(*) FROM proxy WHERE label = :label AND subscription = :subscription LIMIT 1")
     int exists(String label, String subscription);
 
@@ -35,5 +38,6 @@ public interface ProxyDao {
     @Query("DELETE FROM proxy WHERE subscription = :subscription")
     void deleteBySubscription(String subscription);
 
-
+    @Query("SELECT * FROM proxy WHERE id = :id")
+    Proxy findById(long id);
 }

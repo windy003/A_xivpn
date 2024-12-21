@@ -6,4 +6,5 @@ public class Config {
     public List<Inbound> inbounds;
     public List<Outbound> outbounds;
     public Log log = new Log();
+    public Routing routing;
 }

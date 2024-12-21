@@ -12,6 +12,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -130,7 +132,7 @@ public class FilesProvider extends DocumentsProvider {
             throw new FileNotFoundException("file does not exist");
         }
 
-        deleteFile(file);
+        FileUtils.deleteQuietly(file);
     }
 
     @Override
@@ -219,13 +221,4 @@ public class FilesProvider extends DocumentsProvider {
     }
 
 
-    public static void deleteFile(File f) {
-        Log.d(TAG, "delete " + f.getAbsolutePath());
-        if (f.isDirectory()) {
-            for (File sub : Objects.requireNonNull(f.listFiles())) {
-                deleteFile(sub);
-            }
-        }
-        f.delete();
-    }
 }

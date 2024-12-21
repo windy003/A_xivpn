@@ -1,5 +1,6 @@
 [versions]
-agp = "8.7.2"
+agp = "8.7.3"
+commonsIo = "2.18.0"
 gson = "2.11.0"
 guavaVersion = "33.3.0-android"
 junit = "4.13.2"
@@ -15,6 +16,7 @@ roomRuntime = "2.6.1"
 workRuntime = "2.10.0"
 
 [libraries]
+commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo" }
 google-guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

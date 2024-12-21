@@ -21,7 +21,6 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
     private final ArrayList<Proxy> proxies;
     private Listener onClickListener;
     private Listener onLongClickListener;
-    private int selected = -1;
     public ProxiesAdapter() {
         proxies = new ArrayList<>();
     }
@@ -58,19 +57,6 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
         this.notifyItemRangeRemoved(0, length);
     }
 
-    public void setSelectedProxy(String label, String subscription) {
-        int oldSelected = this.selected;
-        for (int i = 0; i < proxies.size(); i++) {
-            Proxy proxy = proxies.get(i);
-            if (proxy.label.equals(label) && proxy.subscription.equals(subscription)) {
-                this.selected = i;
-                if (oldSelected >= 0) this.notifyItemChanged(oldSelected);
-                this.notifyItemChanged(selected);
-                break;
-            }
-        }
-    }
-
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Proxy proxy = proxies.get(position);
@@ -102,7 +88,6 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
             return false;
         });
         holder.getCard().setCheckable(true);
-        holder.getCard().setChecked(position == selected);
     }
 
     @Override
