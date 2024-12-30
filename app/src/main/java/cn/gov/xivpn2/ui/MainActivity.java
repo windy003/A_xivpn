@@ -24,33 +24,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.preference.PreferenceManager;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.navigation.NavigationView;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.ToNumberPolicy;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 import cn.gov.xivpn2.R;
-import cn.gov.xivpn2.database.AppDatabase;
-import cn.gov.xivpn2.database.Proxy;
-import cn.gov.xivpn2.database.Rules;
 import cn.gov.xivpn2.service.XiVPNService;
-import cn.gov.xivpn2.xrayconfig.Config;
-import cn.gov.xivpn2.xrayconfig.Inbound;
-import cn.gov.xivpn2.xrayconfig.Outbound;
-import cn.gov.xivpn2.xrayconfig.Routing;
-import cn.gov.xivpn2.xrayconfig.RoutingRule;
-import cn.gov.xivpn2.xrayconfig.Sniffing;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -66,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             binder = (XiVPNService.XiVPNBinder) service;
 
-            updateSwitch(binder.getService().getStatus());
+            updateSwitch(binder.getStatus());
 
             binder.setListener(new XiVPNService.VPNStatusListener() {
                 @Override
@@ -140,21 +119,18 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                // build xray config
-                Config config = buildXrayConfig();
-
-                // start vpn service
-
-                if (binder.getService().startVPN(config)) {
-                    Intent intent2 = new Intent(this, XiVPNService.class);
-                    intent2.setAction("cn.gov.xivpn2.START");
-                    startForegroundService(intent2);
-                }
-
+                // start service
+                Intent intent2 = new Intent(this, XiVPNService.class);
+                intent2.setAction("cn.gov.xivpn2.START");
+                intent2.putExtra("always-on", false);
+                startForegroundService(intent2);
 
             } else {
                 // stop
-                binder.getService().stopVPN();
+                Intent intent2 = new Intent(this, XiVPNService.class);
+                intent2.setAction("cn.gov.xivpn2.STOP");
+                intent2.putExtra("always-on", false);
+                startService(intent2);
             }
         };
         aSwitch.setOnCheckedChangeListener(onCheckedChangeListener);
@@ -224,69 +200,5 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private Config buildXrayConfig() {
-        Config config = new Config();
-        config.inbounds = new ArrayList<>();
-        config.outbounds = new ArrayList<>();
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // logs
-        config.log.loglevel = preferences.getString("log_level", "warning");
-
-        // socks5 inbound
-        Inbound socks5Inbound = new Inbound();
-        socks5Inbound.protocol = "socks";
-        socks5Inbound.port = XiVPNService.SOCKS_PORT;
-        socks5Inbound.listen = "10.89.64.1";
-        socks5Inbound.settings = new HashMap<>();
-        socks5Inbound.settings.put("udp", true);
-
-        socks5Inbound.sniffing = new Sniffing();
-        socks5Inbound.sniffing.enabled = preferences.getBoolean("sniffing", true);
-        socks5Inbound.sniffing.destOverride = List.of("http", "tls");
-        socks5Inbound.sniffing.routeOnly = preferences.getBoolean("sniffing_route_only", true);
-
-        config.inbounds.add(socks5Inbound);
-
-        try {
-
-            // routing
-            List<RoutingRule> rules = Rules.readRules(getFilesDir());
-
-            config.routing = new Routing();
-            config.routing.rules = rules;
-
-            // outbound
-            HashSet<Long> proxyIds = new HashSet<>();
-
-            for (RoutingRule rule : rules) {
-                long id = AppDatabase.getInstance().proxyDao().find(rule.outboundLabel, rule.outboundSubscription).id;
-                Log.d("MainActivity", "build xray config: add proxy: " + id + " | " + rule.outboundLabel + " | " + rule.outboundSubscription);
-                proxyIds.add(id);
-
-                rule.outboundTag = String.format("#%d %s (%s)", id, rule.outboundLabel, rule.outboundSubscription);
-                if (rule.domain.isEmpty()) rule.domain = null;
-                if (rule.ip.isEmpty()) rule.ip = null;
-                if (rule.port.isEmpty()) rule.port = null;
-                if (rule.protocol.isEmpty()) rule.protocol = null;
-                rule.outboundLabel = null;
-                rule.outboundSubscription = null;
-                rule.label = null;
-            }
-
-            for (Long id : proxyIds) {
-                Proxy proxy = AppDatabase.getInstance().proxyDao().findById(id);
-                Gson gson = new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
-                Outbound<?> outbound = gson.fromJson(proxy.config, Outbound.class);
-                outbound.tag = String.format("#%d %s (%s)", id, proxy.label, proxy.subscription);
-                config.outbounds.add(outbound);
-            }
-        } catch (IOException e) {
-            Log.wtf("MainActivity", "build xray config", e);
-        }
-
-        return config;
-    }
 
 }
