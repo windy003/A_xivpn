@@ -1,5 +1,6 @@
 package cn.gov.xivpn2.database;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.common.reflect.TypeToken;
@@ -39,7 +40,7 @@ public class Rules {
     /**
      * Reset outbound to freedom for delete outbound proxy
      */
-    public static void resetDeletedProxies(File filesDir) throws IOException {
+    public static void resetDeletedProxies(SharedPreferences sp, File filesDir) throws IOException {
         List<RoutingRule> rules = readRules(filesDir);
         for (RoutingRule rule : rules) {
             Proxy proxy = AppDatabase.getInstance().proxyDao().find(rule.outboundLabel, rule.outboundSubscription);
@@ -50,5 +51,21 @@ public class Rules {
             }
         }
         writeRules(filesDir, rules);
+
+        String selectedLabel = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
+        String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
+        if (AppDatabase.getInstance().proxyDao().exists(selectedLabel, selectedSubscription) == 0) {
+            setCatchAll(sp, "No Proxy (Bypass Mode)", "none");
+        }
+
     }
+
+    public static void setCatchAll(SharedPreferences sp, String label, String subscription) {
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putString("SELECTED_LABEL", label);
+        edit.putString("SELECTED_SUBSCRIPTION", subscription);
+        edit.commit();
+    }
+
+
 }

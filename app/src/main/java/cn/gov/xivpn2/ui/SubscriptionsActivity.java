@@ -120,7 +120,7 @@ public class SubscriptionsActivity extends AppCompatActivity {
                         AppDatabase.getInstance().subscriptionDao().delete(subscription.label);
 
                         try {
-                            Rules.resetDeletedProxies(getApplicationContext().getFilesDir());
+                            Rules.resetDeletedProxies(getSharedPreferences("XIVPN", MODE_PRIVATE), getApplicationContext().getFilesDir());
                         } catch (IOException e) {
                             Log.e("SubscriptionsActivity", "reset deleted proxies", e);
                         }

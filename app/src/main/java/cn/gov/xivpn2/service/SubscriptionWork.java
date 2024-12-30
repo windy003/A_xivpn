@@ -1,5 +1,7 @@
 package cn.gov.xivpn2.service;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -151,7 +153,7 @@ public class SubscriptionWork extends Worker {
         }
 
         try {
-            Rules.resetDeletedProxies(getApplicationContext().getFilesDir());
+            Rules.resetDeletedProxies(getApplicationContext().getSharedPreferences("XIVPN", MODE_PRIVATE), getApplicationContext().getFilesDir());
         } catch (IOException e) {
             Log.e(TAG, "reset deleted proxies", e);
         }

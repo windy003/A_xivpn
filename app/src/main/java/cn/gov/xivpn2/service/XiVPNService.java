@@ -1,6 +1,7 @@
 package cn.gov.xivpn2.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -191,9 +192,23 @@ public class XiVPNService extends VpnService {
                 rule.label = null;
             }
 
+            Gson gson = new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
+
+            // catch all
+            SharedPreferences sp = getSharedPreferences("XIVPN", Context.MODE_PRIVATE);
+            String selectedLabel = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
+            String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
+            Proxy catchAll = AppDatabase.getInstance().proxyDao().find(selectedLabel, selectedSubscription);
+            proxyIds.remove(catchAll.id);
+
+            // put catch all proxy as the first outbound
+            Outbound<?> outboundCatchall = gson.fromJson(catchAll.config, Outbound.class);
+            outboundCatchall.tag = String.format("#%d %s (%s)", catchAll.id, catchAll.label, catchAll.subscription);
+            config.outbounds.add(outboundCatchall);
+
+            // outbounds
             for (Long id : proxyIds) {
                 Proxy proxy = AppDatabase.getInstance().proxyDao().findById(id);
-                Gson gson = new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
                 Outbound<?> outbound = gson.fromJson(proxy.config, Outbound.class);
                 outbound.tag = String.format("#%d %s (%s)", id, proxy.label, proxy.subscription);
                 config.outbounds.add(outbound);

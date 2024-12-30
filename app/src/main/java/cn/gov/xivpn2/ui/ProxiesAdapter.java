@@ -21,6 +21,8 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
     private final ArrayList<Proxy> proxies;
     private Listener onClickListener;
     private Listener onLongClickListener;
+    private int checked = -1;
+
     public ProxiesAdapter() {
         proxies = new ArrayList<>();
     }
@@ -44,11 +46,6 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
         int length = this.proxies.size();
         proxies.addAll(proxyList);
         this.notifyItemRangeInserted(length, proxyList.size());
-    }
-
-    public void addProxy(Proxy proxy) {
-        proxies.add(proxy);
-        this.notifyItemInserted(proxies.size() - 1);
     }
 
     public void clear() {
@@ -88,6 +85,18 @@ public class ProxiesAdapter extends RecyclerView.Adapter<ProxiesAdapter.ViewHold
             return false;
         });
         holder.getCard().setCheckable(true);
+        holder.getCard().setChecked(checked == position);
+    }
+
+    public void setChecked(String label, String subscription) {
+        if (checked != -1) notifyItemChanged(checked);
+        for (int i = 0; i < proxies.size(); i++) {
+            if (proxies.get(i).label.equals(label) && proxies.get(i).subscription.equals(subscription)) {
+                checked = i;
+                notifyItemChanged(checked);
+                return;
+            }
+        }
     }
 
     @Override
