@@ -1264,8 +1264,9 @@ Public License instead of this License.  But first, please read
 GEOIP
 -----
 
-https://github.com/v2fly/geoip/blob/master/LICENSE
-https://creativecommons.org/licenses/by-sa/4.0/
+https://github.com/dyhkwong/v2ray-geoip
+https://creativecommons.org/licenses/by/4.0/
+IP Geolocation by DB-IP https://db-ip.com
 
 
 DOMAIN-LIST-COMMUNITY
