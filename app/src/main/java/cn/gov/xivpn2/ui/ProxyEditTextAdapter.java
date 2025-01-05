@@ -195,6 +195,8 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             EditTextViewHolder holder = (EditTextViewHolder) h;
 
+            holder.onTextChanged = null;
+
             holder.editText.setText(input.value);
             holder.layout.setHint(input.title);
             holder.layout.setHelperText(input.helperText);
