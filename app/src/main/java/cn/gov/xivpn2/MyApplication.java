@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.ParcelFileDescriptor;
+import android.system.ErrnoException;
+import android.system.Os;
 import android.util.Log;
 
 import androidx.room.Room;
@@ -30,6 +32,9 @@ import cn.gov.xivpn2.service.SubscriptionWork;
 import cn.gov.xivpn2.ui.CrashActivity;
 
 public class MyApplication extends Application {
+
+    private static final String TAG = "MyApplication";
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -82,22 +87,26 @@ public class MyApplication extends Application {
                         .build()
         );
 
-        // default routing rules
-        File file = new File(getFilesDir(), "rules.json");
-        if (!file.exists()) {
-            Log.i("MyApplication", "copy default rules to " + file.getAbsolutePath());
 
+        // copy assets
+        writeAsset("default_rules.json", new File(getFilesDir(), "rules.json"));
+        writeAsset("geosite", new File(getFilesDir(), "geosite.dat"));
+        writeAsset("geoip", new File(getFilesDir(), "geoip.dat"));
+    }
+
+    private void writeAsset(String asset, File out) {
+        Log.i(TAG, "write assets " + asset + " => " + out.getAbsolutePath());
+        if (!out.exists()) {
+            Log.i(TAG, "copy " + asset + " => " + out.getAbsolutePath());
             try {
                 AssetManager assets = getAssets();
-                InputStream inputStream = assets.open("default_rules.json");
-                byte[] bytes = IOUtils.toByteArray(inputStream);
+                InputStream inputStream = assets.open(asset);
+                FileUtils.copyToFile(inputStream, out);
                 inputStream.close();
-                FileUtils.writeByteArrayToFile(file, bytes);
             } catch (IOException e) {
-                Log.e("MyApplication", "copy default rules", e);
-                throw new RuntimeException(e);
+                Log.e(TAG, "write asset", e);
             }
         }
-
     }
+
 }

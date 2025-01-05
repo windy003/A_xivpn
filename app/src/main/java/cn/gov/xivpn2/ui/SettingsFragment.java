@@ -4,12 +4,17 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spanned;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.Preference;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.text.method.LinkMovementMethodCompat;
 import androidx.preference.PreferenceFragmentCompat;
 
 import cn.gov.xivpn2.BuildConfig;
@@ -49,6 +54,28 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });
 
         findPreference("app_version").setSummary(BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")");
+
+        findPreference("geoip_geosite").setOnPreferenceClickListener(preference -> {
+            Spanned html = Html.fromHtml(getString(R.string.geoip_geosite_summary), Html.FROM_HTML_MODE_COMPACT);
+
+            TextView textView = new TextView(requireContext());
+            textView.setText(html);
+            textView.setMovementMethod(LinkMovementMethodCompat.getInstance());
+
+            FrameLayout frameLayout = new FrameLayout(requireContext());
+            frameLayout.addView(textView);
+
+            frameLayout.setPadding(dp2px(24f), dp2px(24f), dp2px(24f), dp2px(24f));
+
+            AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.geoip_geosite)
+                    .setView(frameLayout)
+                    .setPositiveButton(R.string.ok, null)
+                    .create();
+            dialog.show();
+
+            return true;
+        });
     }
 
     private void openUrl(String url) {
@@ -58,5 +85,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         } catch (ActivityNotFoundException e) {
             Log.e("SettingsFragment", "open browser", e);
         }
+    }
+
+    public int dp2px(float dp) {
+        return (int) (dp * ((float) requireContext().getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 }

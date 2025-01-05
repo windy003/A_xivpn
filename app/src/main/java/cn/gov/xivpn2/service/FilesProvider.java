@@ -26,14 +26,14 @@ public class FilesProvider extends DocumentsProvider {
     private static final String TAG = "FilesProvider";
 
     private static final String[] DEFAULT_ROOT_PROJECTION =
-            new String[]{Root.COLUMN_ROOT_ID, Root.COLUMN_ICON, Root.COLUMN_TITLE, Root.COLUMN_DOCUMENT_ID, Root.COLUMN_FLAGS};
+            new String[]{Root.COLUMN_ROOT_ID, Root.COLUMN_ICON, Root.COLUMN_TITLE, Root.COLUMN_DOCUMENT_ID, Root.COLUMN_FLAGS, Root.COLUMN_SUMMARY};
 
     private static final String[] DEFAULT_DOCUMENT_PROJECTION = new
             String[]{Document.COLUMN_DOCUMENT_ID, Document.COLUMN_MIME_TYPE,
             Document.COLUMN_DISPLAY_NAME, Document.COLUMN_LAST_MODIFIED,
             Document.COLUMN_FLAGS, Document.COLUMN_SIZE,};
 
-    private File base;
+    private String base;
 
     @Override
     public Cursor queryRoots(String[] projection) throws FileNotFoundException {
@@ -60,7 +60,7 @@ public class FilesProvider extends DocumentsProvider {
             throw new FileNotFoundException("illegal file name");
         }
 
-        File file = new File(base.getAbsolutePath() + documentId);
+        File file = new File(base + documentId);
 
         if (!file.exists()) {
             throw new FileNotFoundException("file does not exist");
@@ -93,7 +93,7 @@ public class FilesProvider extends DocumentsProvider {
 
         MatrixCursor cursor = new MatrixCursor(projection);
 
-        File f = new File(base.getAbsolutePath() + parentDocumentId);
+        File f = new File(base + parentDocumentId);
 
         if (!f.exists()) {
             throw new FileNotFoundException("file does not exist");
@@ -102,7 +102,7 @@ public class FilesProvider extends DocumentsProvider {
         for (File file : Objects.requireNonNull(f.listFiles())) {
 
             MatrixCursor.RowBuilder row = cursor.newRow();
-            row.add(Document.COLUMN_DOCUMENT_ID, file.getAbsolutePath().substring(base.getAbsolutePath().length()));
+            row.add(Document.COLUMN_DOCUMENT_ID, file.getAbsolutePath().substring(base.length()));
             row.add(Document.COLUMN_LAST_MODIFIED, file.lastModified());
             row.add(Document.COLUMN_FLAGS, Document.FLAG_SUPPORTS_DELETE);
             row.add(Document.COLUMN_SIZE, file.length());
@@ -126,7 +126,7 @@ public class FilesProvider extends DocumentsProvider {
             throw new FileNotFoundException("illegal file name");
         }
 
-        File file = new File(base.getAbsolutePath() + documentId);
+        File file = new File(base + documentId);
 
         if (!file.exists()) {
             throw new FileNotFoundException("file does not exist");
@@ -150,7 +150,7 @@ public class FilesProvider extends DocumentsProvider {
             throw new FileNotFoundException("illegal file name");
         }
 
-        File file = new File(base.getAbsolutePath() + documentId);
+        File file = new File(base + documentId);
 
         if (!file.exists()) {
             throw new FileNotFoundException("file does not exist");
@@ -167,7 +167,7 @@ public class FilesProvider extends DocumentsProvider {
             throw new FileNotFoundException("illegal file name");
         }
 
-        File file = new File(base.getAbsolutePath() + documentId);
+        File file = new File(base + documentId);
 
         if (!file.exists()) {
             throw new FileNotFoundException("file does not exist");
@@ -183,7 +183,7 @@ public class FilesProvider extends DocumentsProvider {
             throw new FileNotFoundException("rename failed");
         }
 
-        return dest.getAbsolutePath().substring(base.getAbsolutePath().length());
+        return dest.getAbsolutePath().substring(base.length());
     }
 
     @Override
@@ -194,7 +194,7 @@ public class FilesProvider extends DocumentsProvider {
             throw new FileNotFoundException("illegal file name");
         }
 
-        File file = new File(base.getAbsolutePath() + parentDocumentId + "/" + displayName);
+        File file = new File(base + parentDocumentId + "/" + displayName);
         if (file.exists()) {
             throw new FileNotFoundException("file already exists");
         }
@@ -214,9 +214,10 @@ public class FilesProvider extends DocumentsProvider {
 
     @Override
     public boolean onCreate() {
-        base = new File(Objects.requireNonNull(getContext()).getDataDir(), "logs");
-        base.mkdirs();
-        Log.d(TAG, "base " + base.getAbsolutePath());
+        File f = Objects.requireNonNull(getContext()).getFilesDir();
+        f.mkdirs();
+        base = f.getAbsolutePath();
+        Log.d(TAG, "base " + base);
         return true;
     }
 

@@ -9,6 +9,8 @@ import android.net.VpnService;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
+import android.system.ErrnoException;
+import android.system.Os;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -18,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -106,7 +109,8 @@ public class XiVPNService extends VpnService {
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("logs", false)) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault());
             String datetime = sdf.format(new Date());
-            logFile = getDataDir().getAbsolutePath() + "/logs/" + datetime + ".txt";
+            logFile = getFilesDir().getAbsolutePath() + "/logs/" + datetime + ".txt";
+            new File(getFilesDir().getAbsolutePath(), "logs").mkdirs();
         }
         Log.i(TAG, "log file " + logFile);
 
@@ -114,7 +118,7 @@ public class XiVPNService extends VpnService {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String xrayConfig = gson.toJson(config);
         Log.i(TAG, "xray config: " + xrayConfig);
-        String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.detachFd(), logFile);
+        String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.detachFd(), logFile, getFilesDir().getAbsolutePath());
 
         status = Status.CONNECTED;
         if (listener != null) listener.onStatusChanged(status);
