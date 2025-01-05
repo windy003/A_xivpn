@@ -4,6 +4,7 @@ Features:
 - Fetch proxies from subscription links
 - Easy to use GUI
 - Configurable proxy settings
+- Routing
 - Fully open source
 
 Supported protocols:
