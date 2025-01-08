@@ -25,8 +25,11 @@ Or download from [Github releases](https://github.com/Exclude0122/xivpn/releases
   <summary>Expand</summary>
 
 ![Home page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
-![Proxies page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
-![Proxy settings page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png)
+![Home page 2](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
+![Proxy page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png)
+![Routing rules page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png)
+![VLESS settings page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/5.png)
+![Wireguard settings page](https://github.com/Exclude0122/xivpn/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/6.png)
 
 
 </details>
