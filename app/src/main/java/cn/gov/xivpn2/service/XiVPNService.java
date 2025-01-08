@@ -60,10 +60,15 @@ public class XiVPNService extends VpnService {
         // We set always-on to false when the service is started by the app,
         // so we assume service started without always-on is started by the system.
         boolean alwaysOn = intent.getBooleanExtra("always-on", true);
-        Log.i(TAG, "always on");
+        Log.i(TAG, "always on " + alwaysOn);
 
         // start vpn
         if ((intent.getAction() != null && intent.getAction().equals("cn.gov.xivpn2.START")) || alwaysOn) {
+            if (status != Status.DISCONNECTED) {
+                Log.d(TAG, "on start command already started");
+                return Service.START_NOT_STICKY;
+            }
+
             Log.i(TAG, "start foreground");
 
             // start foreground service
@@ -78,6 +83,11 @@ public class XiVPNService extends VpnService {
 
         // stop vpn
         if (intent.getAction() != null && intent.getAction().equals("cn.gov.xivpn2.STOP")) {
+            if (status != Status.CONNECTED) {
+                Log.d(TAG, "on start command already stopped");
+                return Service.START_NOT_STICKY;
+            }
+
             stopForeground(true);
             stopVPN();
         }
