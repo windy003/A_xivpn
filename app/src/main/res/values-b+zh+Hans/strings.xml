@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">XiVPN</string>
+    <string name="subscriptions">订阅</string>
+    <string name="subscription">订阅</string>
+    <string name="proxies">代理服务器</string>
+    <string name="timeout">超时</string>
+    <string name="add">添加</string>
+    <string name="save">保存</string>
+    <string name="label">标签</string>
+    <string name="ok">OK</string>
+    <string name="edit">编辑</string>
+    <string name="delete">删除</string>
+    <string name="conflict_label">标签已经存在</string>
+    <string name="label_help_text">为新代理输入自定义标签</string>
+    <string name="url">URL</string>
+    <string name="empty_label_or_url">标签和 URL 是必填项</string>
+    <string name="update">更新</string>
+    <string name="refresh">刷新</string>
+    <string name="subscription_updating">更新订阅中…</string>
+    <string name="subscription_error">"更新订阅失败: "</string>
+    <string name="subscription_updated">"订阅更新: "</string>
+    <string name="report_bug_github">在 Github 上反馈问题</string>
+    <string name="subscription_already_exists">标签已经存在</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="feedback">反馈</string>
+    <string name="feedback_summary">反馈技术问题和建议</string>
+    <string name="source_code">源代码</string>
+    <string name="source_code_summary">从 Github 获取源代码</string>
+    <string name="open_source_licenses">开源协议</string>
+    <string name="settings">设置</string>
+    <string name="xray_version">Xray 版本</string>
+    <string name="about">关于</string>
+    <string name="black_background">纯黑背景</string>
+    <string name="appearance">用户界面设置</string>
+    <string name="restart_to_apply">重新启动应用程序以使此设置生效</string>
+    <string name="black_background_summary">在深色主题中使用纯黑色背景</string>
+    <string name="app_version">应用版本</string>
+    <string name="vpn_settings">VPN 设置</string>
+    <string name="log_level">日志等级</string>
+    <string name="logs">将日志写入文件</string>
+    <string name="logs_summary">将日志写入文件。要查看日志文件，请使用文件资源管理器应用程序（例如 Material Files）并将 XiVPN 添加为外部存储。</string>
+    <string name="rules">路由规则</string>
+    <string name="edit_rule">编辑规则</string>
+    <string name="domains">域名</string>
+    <string name="one_per_line">一行一个</string>
+    <string name="ips">IPs</string>
+    <string name="port">端口</string>
+    <string name="network">TCP/UDP</string>
+    <string name="protocol">协议</string>
+    <string name="outbound">出站代理服务器</string>
+    <string name="new_rule">新建规则</string>
+    <string name="sniffing">流量探测</string>
+    <string name="sniffing_summary">从流量数据中探测域名并用探测到的域名替换目标地址。</string>
+    <string name="sniffing_route_only">探测仅路由</string>
+    <string name="sniffing_route_only_summary">保留原始目标地址并仅使用探测到的域名进行路由。</string>
+    <string name="geoip_geosite">Geoip / Geosite</string>
+    <string name="geoip_geosite_summary"><![CDATA[
+        To update geoip / geosite database:<br/><br/>
+        <ul>
+          <li>Use a file explorer app (e.g. Material files) and add XiVPN as an external storage</li>
+
+          <li>Download geoip.dat from <a href="https://github.com/v2fly/geoip/releases/latest/download/geoip.dat">https://github.com/v2fly/geoip/releases/latest/download/geoip.dat</a><br/></li>
+
+          <li>Download geosite.dat from <a href="https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat">https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat</a><br/></li>
+
+          <li>Replace geoip.dat and geosite.dat with downloaded files</li>
+        </ul>
+
+    ]]></string>
+</resources>
