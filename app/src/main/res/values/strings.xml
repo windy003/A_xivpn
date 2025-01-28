@@ -54,17 +54,20 @@
     <string name="sniffing_route_only">Sniffing route only</string>
     <string name="sniffing_route_only_summary">Keep the original destination address and only use sniffed domain for routing.</string>
     <string name="geoip_geosite">Geoip / Geosite</string>
-    <string name="geoip_geosite_summary"><![CDATA[
-        To update geoip / geosite database:<br/><br/>
-        <ul>
-          <li>Use a file explorer app (e.g. Material files) and add XiVPN as an external storage</li>
-
-          <li>Download geoip.dat from <a href="https://github.com/v2fly/geoip/releases/latest/download/geoip.dat">https://github.com/v2fly/geoip/releases/latest/download/geoip.dat</a><br/></li>
-
-          <li>Download geosite.dat from <a href="https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat">https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat</a><br/></li>
-
-          <li>Replace geoip.dat and geosite.dat with downloaded files</li>
-        </ul>
-
-    ]]></string>
+    <string name="v2fly_geoip">v2fly/geoip</string>
+    <string name="v2fly_geoip_cn">v2fly/geoip CN</string>
+    <string name="dbip">Geoip data provided by db-ip.com:</string>
+    <string name="ipinfo_geoip">Exclude0122/geoip</string>
+    <string name="ipinfo">Geoip data provided by ipinfo.io:</string>
+    <string name="ipinfo_geoip_cn">Exclude0122/geoip CN</string>
+    <string name="ipinfo_geoip_ir">Exclude0122/geoip IR</string>
+    <string name="ipinfo_geoip_ru">Exclude0122/geoip RU</string>
+    <string name="custom">Custom</string>
+    <string name="custom_geoip_hint">Enter the URL for custom geoip file</string>
+    <string name="geoip">Geoip</string>
+    <string name="geosite">Geosite</string>
+    <string name="v2fly_dlc">v2fly/domain-list-community</string>
+    <string name="custom_geosite_hint">Enter the URL for custom geoip file</string>
+    <string name="downloading_geo_assets">Downloading geo assets…</string>
+    <string name="downloading_error">Download error</string>
 </resources>

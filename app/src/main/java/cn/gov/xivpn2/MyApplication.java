@@ -58,8 +58,10 @@ public class MyApplication extends Application {
 
         // notification
         NotificationChannel channelVpnService = new NotificationChannel("XiVPNService", "Xi VPN Service", NotificationManager.IMPORTANCE_DEFAULT);
+        channelVpnService.setSound(null, null);
         channelVpnService.setDescription("Xi VPN Background Service");
         NotificationChannel channelSubscriptions = new NotificationChannel("XiVPNSubscriptions", "Xi VPN Subscription Update", NotificationManager.IMPORTANCE_DEFAULT);
+        channelSubscriptions.setSound(null, null);
         channelSubscriptions.setDescription("Xi VPN Subscription Update Worker");
 
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
@@ -90,8 +92,6 @@ public class MyApplication extends Application {
 
         // copy assets
         writeAsset("default_rules.json", new File(getFilesDir(), "rules.json"));
-        writeAsset("geosite", new File(getFilesDir(), "geosite.dat"));
-        writeAsset("geoip", new File(getFilesDir(), "geoip.dat"));
     }
 
     private void writeAsset(String asset, File out) {

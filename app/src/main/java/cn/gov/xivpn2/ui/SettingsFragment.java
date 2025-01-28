@@ -56,24 +56,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         findPreference("app_version").setSummary(BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")");
 
         findPreference("geoip_geosite").setOnPreferenceClickListener(preference -> {
-            Spanned html = Html.fromHtml(getString(R.string.geoip_geosite_summary), Html.FROM_HTML_MODE_COMPACT);
-
-            TextView textView = new TextView(requireContext());
-            textView.setText(html);
-            textView.setMovementMethod(LinkMovementMethodCompat.getInstance());
-
-            FrameLayout frameLayout = new FrameLayout(requireContext());
-            frameLayout.addView(textView);
-
-            frameLayout.setPadding(dp2px(24f), dp2px(24f), dp2px(24f), dp2px(24f));
-
-            AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.geoip_geosite)
-                    .setView(frameLayout)
-                    .setPositiveButton(R.string.ok, null)
-                    .create();
-            dialog.show();
-
+            startActivity(new Intent(getContext(), GeoAssetsActivity.class));
             return true;
         });
     }

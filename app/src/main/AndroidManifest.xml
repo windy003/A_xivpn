@@ -19,6 +19,9 @@
         android:theme="@style/Theme.XiVPN"
         tools:targetApi="31">
         <activity
+            android:name=".ui.GeoAssetsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.RuleActivity"
             android:exported="false" />
         <activity
@@ -80,7 +83,6 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="shortService"

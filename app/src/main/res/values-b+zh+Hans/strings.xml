@@ -54,17 +54,20 @@
     <string name="sniffing_route_only">探测仅路由</string>
     <string name="sniffing_route_only_summary">保留原始目标地址并仅使用探测到的域名进行路由。</string>
     <string name="geoip_geosite">Geoip / Geosite</string>
-    <string name="geoip_geosite_summary"><![CDATA[
-        To update geoip / geosite database:<br/><br/>
-        <ul>
-          <li>Use a file explorer app (e.g. Material files) and add XiVPN as an external storage</li>
-
-          <li>Download geoip.dat from <a href="https://github.com/v2fly/geoip/releases/latest/download/geoip.dat">https://github.com/v2fly/geoip/releases/latest/download/geoip.dat</a><br/></li>
-
-          <li>Download geosite.dat from <a href="https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat">https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat</a><br/></li>
-
-          <li>Replace geoip.dat and geosite.dat with downloaded files</li>
-        </ul>
-
-    ]]></string>
+    <string name="ipinfo_geoip_ru">ipinfo_geoip_ru</string>
+    <string name="custom">自定义</string>
+    <string name="custom_geoip_hint">输入 Geoip 文件的 URL</string>
+    <string name="v2fly_dlc">v2fly_dlc</string>
+    <string name="custom_geosite_hint">输入 Geosite 文件的 URL</string>
+    <string name="v2fly_geoip">v2fly_geoip</string>
+    <string name="v2fly_geoip_cn">v2fly_geoip_cn</string>
+    <string name="dbip">db-ip.com 提供的 Geoip 数据：</string>
+    <string name="ipinfo_geoip">ipinfo_geoip</string>
+    <string name="ipinfo">ipinfo.io 提供的 Geoip 数据：</string>
+    <string name="ipinfo_geoip_cn">ipinfo_geoip_cn</string>
+    <string name="ipinfo_geoip_ir">ipinfo_geoip_ir</string>
+    <string name="geoip">geoip</string>
+    <string name="geosite">geosite</string>
+    <string name="downloading_geo_assets">下载 Geo 数据库…</string>
+    <string name="downloading_error">下载失败</string>
 </resources>
