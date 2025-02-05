@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,11 +17,17 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.OutOfQuotaPolicy;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.service.GeoDownloaderWork;
@@ -73,12 +80,32 @@ public class GeoAssetsActivity extends AppCompatActivity {
             this.finish();
             return true;
         } else if (item.getItemId() == R.id.update) {
-            WorkManager workManager = WorkManager.getInstance(this);
-            workManager.enqueue(
-                    new OneTimeWorkRequest.Builder(GeoDownloaderWork.class)
-                            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                            .build()
-            );
+            try {
+                WorkManager workManager = WorkManager.getInstance(this);
+                List<WorkInfo> works = workManager.getWorkInfosByTag("geoassets").get();
+
+                boolean running = false;
+                for (WorkInfo work : works) {
+                    if (work.getState() == WorkInfo.State.RUNNING || work.getState() == WorkInfo.State.ENQUEUED) {
+                        running = true;
+                        break;
+                    }
+                }
+
+                if (!running) {
+                    workManager.enqueue(
+                            new OneTimeWorkRequest.Builder(GeoDownloaderWork.class)
+                                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                                    .addTag("geoassets")
+                                    .build()
+                    );
+                }
+
+
+            } catch (ExecutionException | InterruptedException e) {
+                Log.e("GeoAssetsActivity", "enqueue work", e);
+            }
+
             return true;
         }
         return false;
