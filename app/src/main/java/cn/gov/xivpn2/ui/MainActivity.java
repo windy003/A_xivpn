@@ -3,6 +3,7 @@ package cn.gov.xivpn2.ui;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -28,8 +30,16 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.navigation.NavigationView;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import cn.gov.xivpn2.R;
+import cn.gov.xivpn2.database.Rules;
 import cn.gov.xivpn2.service.XiVPNService;
+import cn.gov.xivpn2.xrayconfig.RoutingRule;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -117,6 +127,35 @@ public class MainActivity extends AppCompatActivity {
                     aSwitch.setChecked(false);
                     startActivityForResult(intent, 1);
                     return;
+                }
+
+                try {
+                    boolean geoip = false;
+                    boolean geosite = false;
+                    List<RoutingRule> routingRules = Rules.readRules(getFilesDir());
+                    for (RoutingRule routingRule : routingRules) {
+                        for (String s : routingRule.ip) {
+                            if (s.startsWith("geoip:")) {
+                                geoip = true;
+                            }
+                            if (s.startsWith("geosite:")) {
+                                geosite = true;
+                            }
+                        }
+                    }
+                    if ((geoip && !new File(getFilesDir(), "geoip.dat").isFile()) || (geosite && !new File(getFilesDir(), "geosite.dat").isFile())) {
+                        new AlertDialog.Builder(this)
+                                .setTitle(R.string.warning)
+                                .setMessage(R.string.geoip_not_downloaded)
+                                .setPositiveButton(R.string.download, (dialog, which) -> {
+                                    startActivity(new Intent(this, GeoAssetsActivity.class));
+                                })
+                                .show();
+                        aSwitch.setChecked(false);
+                        return;
+                    }
+                } catch (IOException e) {
+                    Log.e("MainActivity", "read rules", e);
                 }
 
                 // start service

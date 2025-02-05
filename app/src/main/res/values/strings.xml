@@ -70,4 +70,7 @@
     <string name="custom_geosite_hint">Enter the URL for custom geoip file</string>
     <string name="downloading_geo_assets">Downloading geo assets…</string>
     <string name="downloading_error">Download error</string>
+    <string name="warning">Warning</string>
+    <string name="geoip_not_downloaded"><![CDATA[The Geoip / Geosite database is not downloaded but is being used in routing rules.]]></string>
+    <string name="download">Download</string>
 </resources>

@@ -70,4 +70,7 @@
     <string name="geosite">geosite</string>
     <string name="downloading_geo_assets">下载 Geo 数据库…</string>
     <string name="downloading_error">下载失败</string>
+    <string name="warning">警告</string>
+    <string name="geoip_not_downloaded">使用 Geoip / Geosite 规则前必须下载数据库</string>
+    <string name="download">下载</string>
 </resources>
