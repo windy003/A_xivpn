@@ -136,6 +136,7 @@ public class XiVPNService extends VpnService {
         if (!ret.isEmpty()) { // error occurred
             Log.e(TAG, "libxivpn error: " + ret);
             stopVPN();
+            stopForeground(true);
             try {
                 fileDescriptor.close();
             } catch (IOException e) {
