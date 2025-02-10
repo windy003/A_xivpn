@@ -12,10 +12,12 @@ import android.os.ParcelFileDescriptor;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
@@ -39,9 +41,12 @@ import cn.gov.xivpn2.database.Rules;
 import cn.gov.xivpn2.xrayconfig.Config;
 import cn.gov.xivpn2.xrayconfig.Inbound;
 import cn.gov.xivpn2.xrayconfig.Outbound;
+import cn.gov.xivpn2.xrayconfig.ProxyChain;
+import cn.gov.xivpn2.xrayconfig.ProxyChainSettings;
 import cn.gov.xivpn2.xrayconfig.Routing;
 import cn.gov.xivpn2.xrayconfig.RoutingRule;
 import cn.gov.xivpn2.xrayconfig.Sniffing;
+import cn.gov.xivpn2.xrayconfig.Sockopt;
 
 public class XiVPNService extends VpnService {
 
@@ -78,7 +83,13 @@ public class XiVPNService extends VpnService {
             startForeground(NotificationID.getID(), builder.build());
 
             // start
-            startVPN(buildXrayConfig());
+            try {
+                Config config = buildXrayConfig();
+                startVPN(config);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "start vpn", e);
+                if (listener != null) listener.onMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+            }
         }
 
         // stop vpn
@@ -202,7 +213,7 @@ public class XiVPNService extends VpnService {
                 Log.d(TAG, "build xray config: add proxy: " + id + " | " + rule.outboundLabel + " | " + rule.outboundSubscription);
                 proxyIds.add(id);
 
-                rule.outboundTag = String.format("#%d %s (%s)", id, rule.outboundLabel, rule.outboundSubscription);
+                rule.outboundTag = String.format(Locale.ROOT, "#%d %s (%s)", id, rule.outboundLabel, rule.outboundSubscription);
                 if (rule.domain.isEmpty()) rule.domain = null;
                 if (rule.ip.isEmpty()) rule.ip = null;
                 if (rule.port.isEmpty()) rule.port = null;
@@ -219,19 +230,56 @@ public class XiVPNService extends VpnService {
             String selectedLabel = sp.getString("SELECTED_LABEL", "No Proxy (Bypass Mode)");
             String selectedSubscription = sp.getString("SELECTED_SUBSCRIPTION", "none");
             Proxy catchAll = AppDatabase.getInstance().proxyDao().find(selectedLabel, selectedSubscription);
-            proxyIds.remove(catchAll.id);
 
-            // put catch all proxy as the first outbound
-            Outbound<?> outboundCatchall = gson.fromJson(catchAll.config, Outbound.class);
-            outboundCatchall.tag = String.format("#%d %s (%s)", catchAll.id, catchAll.label, catchAll.subscription);
-            config.outbounds.add(outboundCatchall);
+
+            ArrayList<Long> proxyIdsList = new ArrayList<>(proxyIds);
+            proxyIdsList.remove(catchAll.id);
+            proxyIdsList.add(0, catchAll.id);
 
             // outbounds
-            for (Long id : proxyIds) {
+            for (Long id : proxyIdsList) {
                 Proxy proxy = AppDatabase.getInstance().proxyDao().findById(id);
-                Outbound<?> outbound = gson.fromJson(proxy.config, Outbound.class);
-                outbound.tag = String.format("#%d %s (%s)", id, proxy.label, proxy.subscription);
-                config.outbounds.add(outbound);
+                if (proxy.protocol.equals("proxy-chain")) {
+                    // proxy chain
+                    Outbound<ProxyChainSettings> proxyChainOutbound = gson.fromJson(proxy.config, new TypeToken<Outbound<ProxyChainSettings>>() {
+
+                    }.getType());
+
+                    List<ProxyChain> proxyChains = proxyChainOutbound.settings.proxies;
+
+                    for (int i = proxyChains.size() - 1; i >= 0; i--) {
+                        ProxyChain each = proxyChains.get(i);
+
+                        Proxy p = AppDatabase.getInstance().proxyDao().find(each.label, each.subscription);
+                        if (p == null) {
+                            throw new IllegalArgumentException(String.format(Locale.ROOT, getString(R.string.proxy_chain_not_found), proxy.label, each.label));
+                        }
+                        if (p.protocol.equals("proxy-chain")) {
+                            throw new IllegalArgumentException(String.format(Locale.ROOT, getString(R.string.proxy_chain_nesting_error), proxy.label));
+                        }
+
+                        Outbound<?> outbound = gson.fromJson(p.config, Outbound.class);
+                        if (i == proxyChains.size() - 1) {
+                            outbound.tag = String.format(Locale.ROOT, "#%d %s (%s)", id, proxy.label, proxy.subscription);
+                        } else {
+                            outbound.tag = String.format(Locale.ROOT, "CHAIN #%d %s (%s)", id, each.label, each.subscription);
+                        }
+
+                        if (i > 0) {
+                            outbound.streamSettings.sockopt = new Sockopt();
+                            outbound.streamSettings.sockopt.dialerProxy = String.format(Locale.ROOT, "CHAIN #%d %s (%s)", id, proxyChains.get(i-1).label, proxyChains.get(i-1).subscription);
+                        }
+
+                        config.outbounds.add(outbound);
+                    }
+
+
+                } else {
+                    Outbound<?> outbound = gson.fromJson(proxy.config, Outbound.class);
+                    outbound.tag = String.format(Locale.ROOT, "#%d %s (%s)", id, proxy.label, proxy.subscription);
+                    config.outbounds.add(outbound);
+                }
+
             }
         } catch (IOException e) {
             Log.wtf(TAG, "build xray config", e);

@@ -73,4 +73,9 @@
     <string name="warning">Warning</string>
     <string name="geoip_not_downloaded"><![CDATA[The Geoip / Geosite database is not downloaded but is being used in routing rules.]]></string>
     <string name="download">Download</string>
+    <string name="proxy_chain">Proxy chain</string>
+    <string name="select_proxy">Select proxy</string>
+    <string name="proxy_chain_empty">Proxy chain must not be empty</string>
+    <string name="proxy_chain_not_found">Proxy chain \"%s\": proxy \"%s\" not found</string>
+    <string name="proxy_chain_nesting_error">Proxy chain \"%s\": Nested proxy chains are not supported</string>
 </resources>

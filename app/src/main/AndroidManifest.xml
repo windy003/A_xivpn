@@ -19,6 +19,9 @@
         android:theme="@style/Theme.XiVPN"
         tools:targetApi="31">
         <activity
+            android:name=".ui.ProxyChainActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.GeoAssetsActivity"
             android:exported="false" />
         <activity
