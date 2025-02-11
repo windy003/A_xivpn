@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -37,12 +38,16 @@ import cn.gov.xivpn2.database.Rules;
 import cn.gov.xivpn2.database.Subscription;
 import cn.gov.xivpn2.xrayconfig.HttpUpgradeSettings;
 import cn.gov.xivpn2.xrayconfig.Outbound;
+import cn.gov.xivpn2.xrayconfig.RealitySettings;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksServerSettings;
 import cn.gov.xivpn2.xrayconfig.ShadowsocksSettings;
 import cn.gov.xivpn2.xrayconfig.StreamSettings;
 import cn.gov.xivpn2.xrayconfig.TLSSettings;
 import cn.gov.xivpn2.xrayconfig.TrojanServerSettings;
 import cn.gov.xivpn2.xrayconfig.TrojanSettings;
+import cn.gov.xivpn2.xrayconfig.VlessServerSettings;
+import cn.gov.xivpn2.xrayconfig.VlessSettings;
+import cn.gov.xivpn2.xrayconfig.VlessUser;
 import cn.gov.xivpn2.xrayconfig.VmessServerSettings;
 import cn.gov.xivpn2.xrayconfig.VmessSettings;
 import cn.gov.xivpn2.xrayconfig.VmessShare;
@@ -174,6 +179,7 @@ public class SubscriptionWork extends Worker {
         String[] lines = textDecoded.split("\\r?\\n");
 
         for (String line : lines) {
+            line = line.replace(" ", "%20").replace("|", "%7c");
             Log.i(TAG, "parse " + line);
 
             Proxy proxy = null;
@@ -185,6 +191,8 @@ public class SubscriptionWork extends Worker {
                     proxy = parseVmess(line);
                 } else if (line.startsWith("trojan://")) {
                     proxy = parseTrojan(line);
+                } else if (line.startsWith("vless://")) {
+                    proxy = parseVless(line);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "parse " + label + " " + line, e);
@@ -345,7 +353,11 @@ public class SubscriptionWork extends Worker {
         outbound.streamSettings.network = "tcp";
         outbound.streamSettings.security = "tls";
         outbound.streamSettings.tlsSettings = new TLSSettings();
-        outbound.streamSettings.tlsSettings.allowInsecure = !query.containsKey("allowInsecure") && query.get("allowInsecure").equals("1");
+        if (query.containsKey("allowInsecure")) {
+            outbound.streamSettings.tlsSettings.allowInsecure = query.get("allowInsecure").equals("1") || query.get("allowInsecure").equals("true");
+        } else {
+            outbound.streamSettings.tlsSettings.allowInsecure = false;
+        }
         outbound.streamSettings.tlsSettings.serverName = query.getOrDefault("sni", uri.getHost());
         outbound.streamSettings.tlsSettings.alpn = !query.containsKey("alpn") ? new String[]{"h2", "http/1.1"} : query.get("alpn").split(",");
         outbound.streamSettings.tlsSettings.fingerprint = query.get("fp");
@@ -354,5 +366,66 @@ public class SubscriptionWork extends Worker {
 
         return proxy;
 
+    }
+
+    private Proxy parseVless(String line) throws URISyntaxException, UnsupportedEncodingException {
+        if (!line.startsWith("vless://")) {
+            throw new IllegalArgumentException("invalid trojan " + line);
+        }
+
+        URI uri = new URI(line);
+
+        Proxy proxy = new Proxy();
+        proxy.label = URLDecoder.decode(uri.getFragment(), "UTF-8");
+        proxy.protocol = "vless";
+
+        Outbound<VlessSettings> outbound = new Outbound<>();
+        outbound.protocol = "vless";
+        outbound.settings = new VlessSettings();
+        outbound.settings.vnext = new ArrayList<>();
+
+        Map<String, String> query = splitQuery(uri.getRawQuery());
+
+        VlessServerSettings vlessServerSettings = new VlessServerSettings();
+        vlessServerSettings.address = uri.getHost();
+        vlessServerSettings.port = uri.getPort();
+        VlessUser vlessUser = new VlessUser();
+        vlessUser.id = uri.getUserInfo();
+        vlessUser.encryption = query.getOrDefault("encryption", "none");
+        vlessUser.flow = query.get("flow");
+        vlessServerSettings.users.add(vlessUser);
+
+        outbound.settings.vnext.add(vlessServerSettings);
+
+        outbound.streamSettings = new StreamSettings();
+        outbound.streamSettings.network = "tcp";
+        outbound.streamSettings.security = "none";
+        if (query.getOrDefault("security", "").equals("tls")) {
+            outbound.streamSettings.security = "tls";
+            outbound.streamSettings.tlsSettings = new TLSSettings();
+            outbound.streamSettings.tlsSettings.serverName = query.get("sni");
+            outbound.streamSettings.tlsSettings.fingerprint = query.get("fp");
+            if (query.containsKey("alpn")) {
+                outbound.streamSettings.tlsSettings.alpn = query.get("alpn").split(":");
+            } else {
+                outbound.streamSettings.tlsSettings.alpn = new String[]{"h2", "http/1.1"};
+            }
+            if (query.containsKey("allowInsecure")) {
+                outbound.streamSettings.tlsSettings.allowInsecure = query.get("allowInsecure").equals("1") || query.get("allowInsecure").equals("true");
+            } else {
+                outbound.streamSettings.tlsSettings.allowInsecure = false;
+            }
+        } else if (query.getOrDefault("security", "").equals("reality")) {
+            outbound.streamSettings.security = "reality";
+            outbound.streamSettings.realitySettings = new RealitySettings();
+            outbound.streamSettings.realitySettings.fingerprint = query.getOrDefault("fp", "chrome");
+            outbound.streamSettings.realitySettings.serverName = query.get("sni");
+            outbound.streamSettings.realitySettings.publicKey = query.get("pbk");
+            outbound.streamSettings.realitySettings.shortId = query.get("sid");
+        }
+
+        proxy.config = new Gson().toJson(outbound);
+
+        return proxy;
     }
 }
