@@ -73,4 +73,9 @@
     <string name="warning">警告</string>
     <string name="geoip_not_downloaded">使用 Geoip / Geosite 规则前必须下载数据库</string>
     <string name="download">下载</string>
+    <string name="proxy_chain">链式代理</string>
+    <string name="select_proxy">选择代理</string>
+    <string name="proxy_chain_empty">链式代理不能为空</string>
+    <string name="proxy_chain_not_found">链式代理 %s: 代理 %s 不存在</string>
+    <string name="proxy_chain_nesting_error">链式代理 %s: 不支持嵌套链式代理</string>
 </resources>
