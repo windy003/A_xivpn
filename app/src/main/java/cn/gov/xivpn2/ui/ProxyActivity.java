@@ -50,7 +50,6 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
 
     private String label;
     private String subscription;
-    private String config;
     private boolean inline;
 
     private String xhttpDownload = "";
@@ -71,11 +70,13 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
 
         label = getIntent().getStringExtra("LABEL");
         subscription = getIntent().getStringExtra("SUBSCRIPTION");
-        config = getIntent().getStringExtra("CONFIG");
+        String config = getIntent().getStringExtra("CONFIG");
         inline = getIntent().getBooleanExtra("INLINE", false);
 
-        getSupportActionBar().setTitle(label);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(label);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -207,8 +208,6 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
 
         return true;
     }
-
-    ;
 
     /**
      * @return type of T

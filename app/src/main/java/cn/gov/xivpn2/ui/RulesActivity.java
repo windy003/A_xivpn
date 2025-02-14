@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -28,7 +27,7 @@ import cn.gov.xivpn2.xrayconfig.RoutingRule;
 public class RulesActivity extends AppCompatActivity {
 
     private RulesAdapter adapter;
-    private ArrayList<RoutingRule> rules = new ArrayList<>();
+    private final ArrayList<RoutingRule> rules = new ArrayList<>();
     private final String TAG = "RulesActivity";
 
     @Override
@@ -45,8 +44,10 @@ public class RulesActivity extends AppCompatActivity {
             return insets;
         });
 
-        getSupportActionBar().setTitle(R.string.rules);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.rules);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // recycler view
         adapter = new RulesAdapter();

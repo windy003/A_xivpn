@@ -9,10 +9,7 @@ import android.net.VpnService;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
-import android.system.ErrnoException;
-import android.system.Os;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -299,7 +296,7 @@ public class XiVPNService extends VpnService {
         DISCONNECTED,
     }
 
-    public static interface VPNStatusListener {
+    public interface VPNStatusListener {
         void onStatusChanged(Status status);
 
         void onMessage(String msg);

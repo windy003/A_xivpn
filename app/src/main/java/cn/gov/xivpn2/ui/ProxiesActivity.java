@@ -32,7 +32,6 @@ import cn.gov.xivpn2.database.Rules;
 public class ProxiesActivity extends AppCompatActivity {
 
 
-    private RecyclerView recyclerView;
     private ProxiesAdapter adapter;
 
     @Override
@@ -49,10 +48,12 @@ public class ProxiesActivity extends AppCompatActivity {
             return insets;
         });
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(R.string.proxies);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(R.string.proxies);
+        }
 
-        recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
 
         this.adapter = new ProxiesAdapter();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -154,7 +155,7 @@ public class ProxiesActivity extends AppCompatActivity {
             // add
 
             View view = LayoutInflater.from(this).inflate(R.layout.label_edit_text, null);
-            TextInputEditText editText = ((TextInputEditText) view.findViewById(R.id.edit_text));
+            TextInputEditText editText = view.findViewById(R.id.edit_text);
 
             new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.label)
