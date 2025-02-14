@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
@@ -16,12 +17,10 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 import cn.gov.xivpn2.R;
 
@@ -44,7 +43,10 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public int getItemViewType(int position) {
         if (inputs.get(position) instanceof ButtonInput) return 2;
-        return inputs.get(position) instanceof SelectInput ? 0 : 1;
+        if (inputs.get(position) instanceof SelectInput) return 0;
+        if (inputs.get(position) instanceof TextInput) return 1;
+        if (inputs.get(position) instanceof TitleInput) return 3;
+        throw new IllegalArgumentException("unexpected view type at position " + position);
     }
 
     /**
@@ -97,6 +99,11 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public void addInput(String key, String label) {
         this.addInput(new TextInput(key, label, ""));
+    }
+
+    @Override
+    public void addGroupTitle(String key, String label) {
+        this.addInput(new TitleInput(key, label));
     }
 
     @Override
@@ -182,6 +189,9 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
         } else if (viewType == 2) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_button, parent, false);
             return new ButtonViewHolder(view);
+        } else if (viewType == 3) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_title, parent, false);
+            return new TitleViewHolder(view);
         } else {
             throw new IllegalArgumentException("view type " + viewType);
         }
@@ -246,6 +256,10 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (!input.validated) {
                 holder.btn.setError("Invalid input");
             }
+        }
+
+        if (h instanceof TitleViewHolder) {
+            ((TitleViewHolder) h).textView.setText(inputs.get(position).title);
         }
 
     }
@@ -342,6 +356,17 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     }
 
+    public static class TitleViewHolder extends RecyclerView.ViewHolder {
+
+        private final AppCompatTextView textView;
+
+        public TitleViewHolder(@NonNull View itemView) {
+            super(itemView);
+            textView = itemView.findViewById(R.id.textview);
+        }
+
+    }
+
     public static class EditTextViewHolder extends RecyclerView.ViewHolder implements TextWatcher {
 
         private final TextInputLayout layout;
@@ -387,6 +412,12 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             this.key = key;
             this.title = title;
             this.helperText = helperText;
+        }
+    }
+
+    public static class TitleInput extends Input {
+        public TitleInput(String key, String title) {
+            super(key, title, "");
         }
     }
 

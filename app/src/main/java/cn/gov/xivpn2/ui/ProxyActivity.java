@@ -83,9 +83,12 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // initialize inputs
+        adapter.addGroupTitle("GROUP_PROXY", "Proxy settings");
         initializeInputs(adapter);
         if (hasStreamSettings()) {
+            adapter.addGroupTitle("GROUP_NETWORK", "Transport");
             adapter.addInput("NETWORK", "Network", Arrays.asList("tcp", "ws", "quic", "httpupgrade", "xhttp"));
+            adapter.addGroupTitle("GROUP_SECURITY", "Security");
             adapter.addInput("SECURITY", "Security", Arrays.asList("none", "tls", "reality"));
         }
         afterInitializeInputs(adapter);
@@ -249,7 +252,7 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                 outbound.streamSettings.xHttpSettings.mode = adapter.getValue("NETWORK_XHTTP_MODE");
                 outbound.streamSettings.xHttpSettings.path = adapter.getValue("NETWORK_XHTTP_PATH");
                 outbound.streamSettings.xHttpSettings.host = adapter.getValue("NETWORK_XHTTP_HOST");
-                if (xhttpDownload != null && !xhttpDownload.isEmpty()) {
+                if (xhttpDownload != null && !xhttpDownload.isEmpty() && adapter.getValue("NETWORK_XHTTP_SEPARATE_DOWNLOAD").equals("True")) {
                     Type type = new TypeToken<Map<String, Object>>() {
                     }.getType();
                     Gson gson = new GsonBuilder().create();
@@ -440,7 +443,6 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                 } else {
                     adapter.removeInput("NETWORK_XHTTP_SEPARATE_DOWNLOAD");
                     adapter.removeInputByPrefix("NETWORK_XHTTP_DOWNLOAD_");
-                    xhttpDownload = "";
                 }
                 break;
 
@@ -455,11 +457,9 @@ public abstract class ProxyActivity<T> extends AppCompatActivity {
                         Intent intent = new Intent(this, XHttpStreamActivity.class);
                         intent.putExtra("LABEL", "Download stream settings");
                         intent.putExtra("INLINE", true);
-                        if (!xhttpDownload.isEmpty()) intent.putExtra("CONFIG", xhttpDownload);
+                        if (adapter.getValue("NETWORK_XHTTP_SEPARATE_DOWNLOAD").equals("True") && !xhttpDownload.isEmpty()) intent.putExtra("CONFIG", xhttpDownload);
                         startActivityForResult(intent, 2);
                     });
-                } else {
-                    xhttpDownload = "";
                 }
                 break;
         }

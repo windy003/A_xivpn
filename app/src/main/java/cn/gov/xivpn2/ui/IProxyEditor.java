@@ -16,6 +16,8 @@ public interface IProxyEditor {
      */
     void addInput(String key, String label);
 
+    void addGroupTitle(String key, String label);
+
     /**
      * Add text input with default value
      */
