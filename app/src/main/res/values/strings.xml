@@ -78,4 +78,8 @@
     <string name="proxy_chain_empty">Proxy chain must not be empty</string>
     <string name="proxy_chain_not_found">Proxy chain \"%s\": proxy \"%s\" not found</string>
     <string name="proxy_chain_nesting_error">Proxy chain \"%s\": Nested proxy chains are not supported</string>
+    <string name="import_form_clipboard">Import from clipboard</string>
+    <string name="share_link_example">ss://</string>
+    <string name="invalid_link">Invalid link</string>
+    <string name="proxy_added">Proxy added</string>
 </resources>

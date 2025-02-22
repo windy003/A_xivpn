@@ -180,7 +180,7 @@ public class SubscriptionWork extends Worker {
      *
      * @param text base64 encoded, one line per proxy
      */
-    private void parse(String text, String label) throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
+    private void parse(String text, String label) {
         // decode base64
         String textDecoded = new String(Base64.decode(text, Base64.DEFAULT), StandardCharsets.UTF_8);
 
@@ -190,41 +190,47 @@ public class SubscriptionWork extends Worker {
             line = line.replace(" ", "%20").replace("|", "%7c");
             Log.i(TAG, "parse " + line);
 
-            Proxy proxy = null;
-
-            try {
-                if (line.startsWith("ss://")) {
-                    proxy = parseShadowsocks(line);
-                } else if (line.startsWith("vmess://")) {
-                    proxy = parseVmess(line);
-                } else if (line.startsWith("trojan://")) {
-                    proxy = parseTrojan(line);
-                } else if (line.startsWith("vless://")) {
-                    proxy = parseVless(line);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "parse " + label + " " + line, e);
-            }
-
-            if (proxy == null) continue;
-
-            proxy.subscription = label;
-
-            int n = 2;
-            String proxyLabel = proxy.label;
-            while (AppDatabase.getInstance().proxyDao().find(proxy.label, proxy.subscription) != null) {
-                // add number to label if already exists
-                proxy.label = proxyLabel + " " + n;
-                n++;
-            }
-            AppDatabase.getInstance().proxyDao().add(proxy);
+            parseLine(line, label);
         }
+    }
+
+    public static boolean parseLine(String line, String subscription) {
+        Proxy proxy = null;
+
+        try {
+            if (line.startsWith("ss://")) {
+                proxy = parseShadowsocks(line);
+            } else if (line.startsWith("vmess://")) {
+                proxy = parseVmess(line);
+            } else if (line.startsWith("trojan://")) {
+                proxy = parseTrojan(line);
+            } else if (line.startsWith("vless://")) {
+                proxy = parseVless(line);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "parse " + subscription + " " + line, e);
+        }
+
+        if (proxy == null) return false;
+
+        proxy.subscription = subscription;
+
+        int n = 2;
+        String proxyLabel = proxy.label;
+        while (AppDatabase.getInstance().proxyDao().find(proxy.label, proxy.subscription) != null) {
+            // add number to label if already exists
+            proxy.label = proxyLabel + " " + n;
+            n++;
+        }
+        AppDatabase.getInstance().proxyDao().add(proxy);
+
+        return true;
     }
 
     /**
      * Parse shadowsocks URI
      */
-    private Proxy parseShadowsocks(String line) throws UnsupportedEncodingException {
+    private static Proxy parseShadowsocks(String line) throws UnsupportedEncodingException {
         Proxy proxy = new Proxy();
         proxy.protocol = "shadowsocks";
 
@@ -271,7 +277,7 @@ public class SubscriptionWork extends Worker {
         return proxy;
     }
 
-    private Proxy parseVmess(String line) {
+    private static Proxy parseVmess(String line) {
         if (!line.startsWith("vmess://")) {
             throw new IllegalArgumentException("invalid vmess " + line);
         }
@@ -335,7 +341,7 @@ public class SubscriptionWork extends Worker {
         return proxy;
     }
 
-    private Proxy parseTrojan(String line) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
+    private static Proxy parseTrojan(String line) throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
         if (!line.startsWith("trojan://")) {
             throw new IllegalArgumentException("invalid trojan " + line);
         }
@@ -376,7 +382,7 @@ public class SubscriptionWork extends Worker {
 
     }
 
-    private Proxy parseVless(String line) throws URISyntaxException, UnsupportedEncodingException {
+    private static Proxy parseVless(String line) throws URISyntaxException, UnsupportedEncodingException {
         if (!line.startsWith("vless://")) {
             throw new IllegalArgumentException("invalid trojan " + line);
         }
