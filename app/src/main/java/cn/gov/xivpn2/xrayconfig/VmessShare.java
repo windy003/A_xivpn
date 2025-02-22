@@ -18,7 +18,7 @@ public class VmessShare {
     public String host = "";
     public String path = "";
     public String tls = "";
-    public String sni;
+    public String sni = "";
     public String alpn = "h2,http/1,1";
     @SerializedName("fp")
     public String fingerprint = "";

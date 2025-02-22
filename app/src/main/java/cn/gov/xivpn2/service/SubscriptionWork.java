@@ -5,7 +5,6 @@ import static android.content.Context.MODE_PRIVATE;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.util.Base64;
@@ -65,7 +64,7 @@ public class SubscriptionWork extends Worker {
         super(context, workerParams);
     }
 
-    public static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
+    private static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
         Map<String, String> query_pairs = new LinkedHashMap<String, String>();
         String[] pairs = query.split("&");
         for (String pair : pairs) {
@@ -73,6 +72,15 @@ public class SubscriptionWork extends Worker {
             query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
         }
         return query_pairs;
+    }
+
+    private static String nullable(String s, String d) {
+        if (d == null) throw new NullPointerException("d must not be null");
+
+        if (s == null) {
+            return d;
+        }
+        return s;
     }
 
     @NonNull
@@ -222,11 +230,11 @@ public class SubscriptionWork extends Worker {
 
         URI uri = URI.create(line);
 
-        String userInfo = uri.getRawUserInfo();
+        String userInfo = nullable(uri.getRawUserInfo(), "");
         String hostname = uri.getHost();
         String port = String.valueOf(uri.getPort());
-        String plugin = uri.getRawQuery();
-        String label = uri.getRawFragment();
+        String plugin = nullable(uri.getRawQuery(), "");
+        String label = nullable(uri.getRawFragment(), "SS");
 
         Outbound<ShadowsocksSettings> outbound = new Outbound<>();
         outbound.settings = new ShadowsocksSettings();
@@ -333,10 +341,10 @@ public class SubscriptionWork extends Worker {
         }
 
         URI uri = new URI(line);
-        Map<String, String> query = splitQuery(uri.getRawQuery());
+        Map<String, String> query = splitQuery(nullable(uri.getRawQuery(), ""));
 
         Proxy proxy = new Proxy();
-        proxy.label = URLDecoder.decode(uri.getFragment(), "UTF-8");
+        proxy.label = URLDecoder.decode(nullable(uri.getFragment(), "TROJAN"), "UTF-8");
         proxy.protocol = "trojan";
 
         Outbound<TrojanSettings> outbound = new Outbound<>();
@@ -346,7 +354,7 @@ public class SubscriptionWork extends Worker {
         TrojanServerSettings trojanServerSettings = new TrojanServerSettings();
         trojanServerSettings.address = uri.getHost();
         trojanServerSettings.port = uri.getPort();
-        trojanServerSettings.password = uri.getUserInfo();
+        trojanServerSettings.password = nullable(uri.getUserInfo(), "");
         outbound.settings.servers.add(trojanServerSettings);
 
         outbound.streamSettings = new StreamSettings();
@@ -360,7 +368,7 @@ public class SubscriptionWork extends Worker {
         }
         outbound.streamSettings.tlsSettings.serverName = query.getOrDefault("sni", uri.getHost());
         outbound.streamSettings.tlsSettings.alpn = !query.containsKey("alpn") ? new String[]{"h2", "http/1.1"} : query.get("alpn").split(",");
-        outbound.streamSettings.tlsSettings.fingerprint = query.get("fp");
+        outbound.streamSettings.tlsSettings.fingerprint = query.getOrDefault("fp", "chrome");
 
         proxy.config = new Gson().toJson(outbound);
 
@@ -376,7 +384,7 @@ public class SubscriptionWork extends Worker {
         URI uri = new URI(line);
 
         Proxy proxy = new Proxy();
-        proxy.label = URLDecoder.decode(uri.getFragment(), "UTF-8");
+        proxy.label = URLDecoder.decode(nullable(uri.getFragment(), "VLESS"), "UTF-8");
         proxy.protocol = "vless";
 
         Outbound<VlessSettings> outbound = new Outbound<>();
@@ -384,15 +392,15 @@ public class SubscriptionWork extends Worker {
         outbound.settings = new VlessSettings();
         outbound.settings.vnext = new ArrayList<>();
 
-        Map<String, String> query = splitQuery(uri.getRawQuery());
+        Map<String, String> query = splitQuery(nullable(uri.getRawQuery(), ""));
 
         VlessServerSettings vlessServerSettings = new VlessServerSettings();
         vlessServerSettings.address = uri.getHost();
         vlessServerSettings.port = uri.getPort();
         VlessUser vlessUser = new VlessUser();
-        vlessUser.id = uri.getUserInfo();
+        vlessUser.id = nullable(uri.getUserInfo(), "");
         vlessUser.encryption = query.getOrDefault("encryption", "none");
-        vlessUser.flow = query.get("flow");
+        vlessUser.flow = nullable(query.get("flow"), "");
         vlessServerSettings.users.add(vlessUser);
 
         outbound.settings.vnext.add(vlessServerSettings);
@@ -403,8 +411,8 @@ public class SubscriptionWork extends Worker {
         if (query.getOrDefault("security", "").equals("tls")) {
             outbound.streamSettings.security = "tls";
             outbound.streamSettings.tlsSettings = new TLSSettings();
-            outbound.streamSettings.tlsSettings.serverName = query.get("sni");
-            outbound.streamSettings.tlsSettings.fingerprint = query.get("fp");
+            outbound.streamSettings.tlsSettings.serverName = query.getOrDefault("sni", uri.getHost());
+            outbound.streamSettings.tlsSettings.fingerprint = query.getOrDefault("fp", "chrome");
             if (query.containsKey("alpn")) {
                 outbound.streamSettings.tlsSettings.alpn = query.get("alpn").split(":");
             } else {
@@ -419,9 +427,9 @@ public class SubscriptionWork extends Worker {
             outbound.streamSettings.security = "reality";
             outbound.streamSettings.realitySettings = new RealitySettings();
             outbound.streamSettings.realitySettings.fingerprint = query.getOrDefault("fp", "chrome");
-            outbound.streamSettings.realitySettings.serverName = query.get("sni");
-            outbound.streamSettings.realitySettings.publicKey = query.get("pbk");
-            outbound.streamSettings.realitySettings.shortId = query.get("sid");
+            outbound.streamSettings.realitySettings.serverName = query.getOrDefault("sni", uri.getHost());
+            outbound.streamSettings.realitySettings.publicKey = query.getOrDefault("pbk", "");
+            outbound.streamSettings.realitySettings.shortId = query.getOrDefault("sid", "");
         }
 
         proxy.config = new Gson().toJson(outbound);
