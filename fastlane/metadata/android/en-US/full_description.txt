@@ -5,6 +5,7 @@ Features:
 - Easy to use GUI
 - Configurable proxy settings
 - Routing
+- Proxy chain
 - Fully open source
 
 Supported protocols:

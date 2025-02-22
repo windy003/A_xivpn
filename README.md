@@ -17,6 +17,8 @@ Or download from [Github releases](https://github.com/Exclude0122/xivpn/releases
 - Fetch proxies from subscription links
 - Easy to use GUI
 - Configurable proxy settings
+- Routing
+- Proxy chain
 - Fully open source
 
 ## Screenshots
