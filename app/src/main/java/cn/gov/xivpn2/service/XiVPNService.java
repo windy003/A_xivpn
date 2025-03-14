@@ -55,6 +55,12 @@ public class XiVPNService extends VpnService {
     private ParcelFileDescriptor fileDescriptor;
 
     @Override
+    public void onCreate() {
+        Log.i(TAG, "on create");
+        super.onCreate();
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         // https://developer.android.com/develop/connectivity/vpn#user_experience_2
@@ -167,6 +173,8 @@ public class XiVPNService extends VpnService {
 
         status = Status.DISCONNECTED;
         if (listener != null) listener.onStatusChanged(status);
+
+        stopSelf();
     }
 
     private Config buildXrayConfig() {
@@ -300,6 +308,12 @@ public class XiVPNService extends VpnService {
         void onStatusChanged(Status status);
 
         void onMessage(String msg);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "on destroy");
+        super.onDestroy();
     }
 
     public class XiVPNBinder extends Binder {
