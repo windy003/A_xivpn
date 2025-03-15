@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import cn.gov.xivpn2.LibXivpn;
 import cn.gov.xivpn2.NotificationID;
@@ -67,11 +68,13 @@ public class XiVPNService extends VpnService {
         // https://developer.android.com/develop/connectivity/vpn#detect_always-on
         // We set always-on to false when the service is started by the app,
         // so we assume service started without always-on is started by the system.
-        boolean alwaysOn = intent.getBooleanExtra("always-on", true);
-        Log.i(TAG, "always on " + alwaysOn);
+
+        boolean shouldStart = intent == null ||
+                intent.getBooleanExtra("always-on", true) ||
+                (intent.getAction() != null && intent.getAction().equals("cn.gov.xivpn2.START"));
 
         // start vpn
-        if ((intent.getAction() != null && intent.getAction().equals("cn.gov.xivpn2.START")) || alwaysOn) {
+        if (shouldStart) {
             if (status != Status.DISCONNECTED) {
                 Log.d(TAG, "on start command already started");
                 return Service.START_NOT_STICKY;
@@ -96,7 +99,7 @@ public class XiVPNService extends VpnService {
         }
 
         // stop vpn
-        if (intent.getAction() != null && intent.getAction().equals("cn.gov.xivpn2.STOP")) {
+        if (intent != null && intent.getAction() != null && intent.getAction().equals("cn.gov.xivpn2.STOP")) {
             if (status != Status.CONNECTED) {
                 Log.d(TAG, "on start command already stopped");
                 return Service.START_NOT_STICKY;
@@ -105,6 +108,7 @@ public class XiVPNService extends VpnService {
             stopForeground(true);
             stopVPN();
         }
+
         return Service.START_NOT_STICKY;
     }
 
