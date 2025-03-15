@@ -1,5 +1,6 @@
 package cn.gov.xivpn2.service;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -36,6 +37,7 @@ import cn.gov.xivpn2.R;
 import cn.gov.xivpn2.database.AppDatabase;
 import cn.gov.xivpn2.database.Proxy;
 import cn.gov.xivpn2.database.Rules;
+import cn.gov.xivpn2.ui.MainActivity;
 import cn.gov.xivpn2.xrayconfig.Config;
 import cn.gov.xivpn2.xrayconfig.Inbound;
 import cn.gov.xivpn2.xrayconfig.Outbound;
@@ -86,6 +88,7 @@ public class XiVPNService extends VpnService {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "XiVPNService");
             builder.setContentText("XiVPN is running");
             builder.setSmallIcon(R.drawable.baseline_vpn_key_24);
+            builder.setContentIntent(PendingIntent.getActivity(this, 20, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
             startForeground(NotificationID.getID(), builder.build());
 
             // start
