@@ -57,17 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
             updateSwitch(binder.getStatus());
 
-            binder.setListener(new XiVPNService.VPNStatusListener() {
-                @Override
-                public void onStatusChanged(XiVPNService.Status status) {
-                    updateSwitch(status);
-                }
-
-                @Override
-                public void onMessage(String msg) {
-                    textView.setText(msg);
-                }
-            });
+            binder.addListener(vpnStatusListener);
         }
 
         @Override
@@ -75,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
             binder = null;
         }
     };
+    private XiVPNService.VPNStatusListener vpnStatusListener;
 
     @Override
     protected void onStart() {
@@ -86,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        binder.removeListener(vpnStatusListener);
         unbindService(connection);
     }
 
@@ -204,6 +196,19 @@ public class MainActivity extends AppCompatActivity {
             drawerLayout.close();
             return false;
         });
+
+        // vpn service listener
+        vpnStatusListener = new XiVPNService.VPNStatusListener() {
+            @Override
+            public void onStatusChanged(XiVPNService.Status status) {
+                updateSwitch(status);
+            }
+
+            @Override
+            public void onMessage(String msg) {
+                textView.setText(msg);
+            }
+        };
     }
 
     /**

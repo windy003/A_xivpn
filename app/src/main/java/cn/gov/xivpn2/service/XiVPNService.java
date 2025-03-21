@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+import java.util.Set;
 
 import cn.gov.xivpn2.LibXivpn;
 import cn.gov.xivpn2.NotificationID;
@@ -53,7 +53,7 @@ public class XiVPNService extends VpnService {
     public static final int SOCKS_PORT = 18964;
     private final IBinder binder = new XiVPNBinder();
     private final String TAG = "XiVPNService";
-    private VPNStatusListener listener;
+    private final Set<VPNStatusListener> listeners = new HashSet<>();
     private Status status = Status.DISCONNECTED;
     private ParcelFileDescriptor fileDescriptor;
 
@@ -97,7 +97,9 @@ public class XiVPNService extends VpnService {
                 startVPN(config);
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, "start vpn", e);
-                if (listener != null) listener.onMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+                for (VPNStatusListener listener : listeners) {
+                    listener.onMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+                }
             }
         }
 
@@ -119,7 +121,9 @@ public class XiVPNService extends VpnService {
         if (status != Status.DISCONNECTED) return;
 
         status = Status.CONNECTING;
-        if (listener != null) listener.onStatusChanged(status);
+        for (VPNStatusListener listener : listeners) {
+            listener.onStatusChanged(status);
+        }
 
         // establish vpn
         Builder vpnBuilder = new Builder();
@@ -152,7 +156,9 @@ public class XiVPNService extends VpnService {
         String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.getFd(), logFile, getFilesDir().getAbsolutePath());
 
         status = Status.CONNECTED;
-        if (listener != null) listener.onStatusChanged(status);
+        for (VPNStatusListener listener : listeners) {
+            listener.onStatusChanged(status);
+        }
 
         if (!ret.isEmpty()) { // error occurred
             Log.e(TAG, "libxivpn error: " + ret);
@@ -163,7 +169,9 @@ public class XiVPNService extends VpnService {
             } catch (IOException e) {
                 Log.e(TAG, "error stop vpn close", e);
             }
-            if (listener != null) listener.onMessage("ERROR: " + ret);
+            for (VPNStatusListener listener : listeners) {
+                listener.onMessage("ERROR: " + ret);
+            }
         }
 
     }
@@ -179,7 +187,9 @@ public class XiVPNService extends VpnService {
         LibXivpn.xivpn_stop();
 
         status = Status.DISCONNECTED;
-        if (listener != null) listener.onStatusChanged(status);
+        for (VPNStatusListener listener : listeners) {
+            listener.onStatusChanged(status);
+        }
 
         stopSelf();
     }
@@ -329,8 +339,14 @@ public class XiVPNService extends VpnService {
             return XiVPNService.this.status;
         }
 
-        public void setListener(VPNStatusListener listener) {
-            XiVPNService.this.listener = listener;
+        public void addListener(VPNStatusListener listener) {
+            Log.d(TAG, "add listener " + listener.toString());
+            XiVPNService.this.listeners.add(listener);
+        }
+
+        public void removeListener(VPNStatusListener listener) {
+            Log.d(TAG, "remove listener " + listener.toString());
+            XiVPNService.this.listeners.remove(listener);
         }
 
     }
