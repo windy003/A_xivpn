@@ -55,6 +55,7 @@ public class MyApplication extends Application {
         });
 
         System.loadLibrary("xivpn");
+        LibXivpn.xivpn_init();
 
         // notification
         NotificationChannel channelVpnService = new NotificationChannel("XiVPNService", "Xi VPN Service", NotificationManager.IMPORTANCE_DEFAULT);

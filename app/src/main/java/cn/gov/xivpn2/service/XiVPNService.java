@@ -48,7 +48,7 @@ import cn.gov.xivpn2.xrayconfig.RoutingRule;
 import cn.gov.xivpn2.xrayconfig.Sniffing;
 import cn.gov.xivpn2.xrayconfig.Sockopt;
 
-public class XiVPNService extends VpnService {
+public class XiVPNService extends VpnService implements SocketProtect {
 
     public static final int SOCKS_PORT = 18964;
     private final IBinder binder = new XiVPNBinder();
@@ -132,11 +132,7 @@ public class XiVPNService extends VpnService {
         vpnBuilder.addAddress("10.89.64.1", 32);
         vpnBuilder.addDnsServer("8.8.8.8");
         vpnBuilder.addDnsServer("8.8.4.4");
-        try {
-            vpnBuilder.addDisallowedApplication(this.getPackageName());
-        } catch (PackageManager.NameNotFoundException ignored) {
 
-        }
         fileDescriptor = vpnBuilder.establish();
 
         // logging
@@ -153,7 +149,7 @@ public class XiVPNService extends VpnService {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String xrayConfig = gson.toJson(config);
         Log.i(TAG, "xray config: " + xrayConfig);
-        String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.getFd(), logFile, getFilesDir().getAbsolutePath());
+        String ret = LibXivpn.xivpn_start(xrayConfig, 18964, fileDescriptor.getFd(), logFile, getFilesDir().getAbsolutePath(), this);
 
         status = Status.CONNECTED;
         for (VPNStatusListener listener : listeners) {
@@ -313,6 +309,12 @@ public class XiVPNService extends VpnService {
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
+    }
+
+    @Override
+    public void protectFd(int fd) {
+        Log.d(TAG, "protect " + fd);
+        this.protect(fd);
     }
 
     public enum Status {
