@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.XiVPN"
         tools:targetApi="31">
+
         <activity
             android:name=".ui.ProxyChainActivity"
             android:exported="false" />
@@ -82,24 +83,23 @@
             android:foregroundServiceType="systemExempted"
             android:permission="android.permission.BIND_VPN_SERVICE"
             tools:ignore="ForegroundServicePermission">
-
-            <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE" android:value="true" />
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
 
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-        
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="shortService"
             tools:node="merge" />
-        
         <service
             android:name=".service.XiVPNTileService"
             android:exported="true"
-            android:label="@string/app_name"
             android:icon="@drawable/tile_icon"
+            android:label="@string/app_name"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
