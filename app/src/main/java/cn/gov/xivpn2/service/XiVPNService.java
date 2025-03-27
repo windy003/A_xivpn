@@ -133,6 +133,23 @@ public class XiVPNService extends VpnService implements SocketProtect {
         vpnBuilder.addDnsServer("8.8.8.8");
         vpnBuilder.addDnsServer("8.8.4.4");
 
+        Set<String> apps = getSharedPreferences("XIVPN", MODE_PRIVATE).getStringSet("APP_LIST", new HashSet<>());
+        boolean blacklist = PreferenceManager.getDefaultSharedPreferences(this).getString("split_tunnel_mode", "Blacklist").equals("Blacklist");
+
+        Log.i(TAG, "is blacklist: " + blacklist);
+        for (String app : apps) {
+            try {
+                Log.i(TAG, "add app: " + app);
+                if (blacklist) {
+                    vpnBuilder.addDisallowedApplication(app);
+                } else {
+                    vpnBuilder.addAllowedApplication(app);
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.w(TAG, "package not found: " + app);
+            }
+        }
+
         fileDescriptor = vpnBuilder.establish();
 
         // logging

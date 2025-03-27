@@ -82,4 +82,7 @@
     <string name="share_link_example">ss://</string>
     <string name="invalid_link">Invalid link</string>
     <string name="proxy_added">Proxy added</string>
+    <string name="split_tunnel">Split Tunnel</string>
+    <string name="split_tunnel_summary">Blacklist: Everything except selected apps are proxied.\nWhitelist: Only selected apps are proxied.</string>
+    <string name="split_tunnel_apps">Apps</string>
 </resources>

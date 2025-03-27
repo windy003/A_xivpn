@@ -59,6 +59,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             startActivity(new Intent(getContext(), GeoAssetsActivity.class));
             return true;
         });
+
+        findPreference("split_tunnel_apps").setOnPreferenceClickListener(preference -> {
+            startActivity(new Intent(getContext(), SplitTunnelActivity.class));
+            return true;
+        });
     }
 
     private void openUrl(String url) {

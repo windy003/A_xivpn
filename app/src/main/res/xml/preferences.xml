@@ -44,6 +44,26 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="@string/split_tunnel"
+        app:iconSpaceReserved="false">
+
+        <ListPreference
+            android:defaultValue="Blacklist"
+            android:entries="@array/split_tunnel_modes"
+            android:entryValues="@array/split_tunnel_modes"
+            android:title="Mode"
+            app:iconSpaceReserved="false"
+            app:key="split_tunnel_mode"
+            app:summary="@string/split_tunnel_summary" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            android:title="@string/split_tunnel_apps"
+            app:key="split_tunnel_apps" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/appearance">
         <CheckBoxPreference
