@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        binder.removeListener(vpnStatusListener);
+        if (binder != null) binder.removeListener(vpnStatusListener);
         unbindService(connection);
     }
 
