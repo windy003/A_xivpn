@@ -9,50 +9,101 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SortedList;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import cn.gov.xivpn2.R;
 
 public class InstalledAppsAdapter extends RecyclerView.Adapter<InstalledAppsAdapter.ViewHolder> {
 
-    public final List<App> apps = new ArrayList<>();
+    public BiConsumer<String, Boolean> onCheckListener = null;
 
-    /**
-     * onCheckListener(idx, selected);
-     */
-    public Consumer<Integer> onCheckListener = null;
-    private final boolean checked;
+    public final SortedList<App> apps = new SortedList<>(App.class, new SortedList.Callback<App>() {
+        @Override
+        public int compare(App o1, App o2) {
+            if (o1.checked && !o2.checked) return -1;
+            if (!o1.checked && o2.checked) return 1;
+            return o1.appName.compareToIgnoreCase(o2.appName);
+        }
 
-    public InstalledAppsAdapter(boolean checked) {
-        this.checked = checked;
+        @Override
+        public void onChanged(int position, int count) {
+            InstalledAppsAdapter.this.notifyItemRangeChanged(position, count);
+        }
+
+        @Override
+        public boolean areContentsTheSame(App oldItem, App newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areItemsTheSame(App item1, App item2) {
+            return item1.equals(item2);
+        }
+
+        @Override
+        public void onInserted(int position, int count) {
+            InstalledAppsAdapter.this.notifyItemRangeInserted(position, count);
+        }
+
+        @Override
+        public void onRemoved(int position, int count) {
+            InstalledAppsAdapter.this.notifyItemRangeRemoved(position, count);
+        }
+
+        @Override
+        public void onMoved(int fromPosition, int toPosition) {
+            InstalledAppsAdapter.this.notifyItemMoved(fromPosition, toPosition);
+        }
+    });
+
+    public InstalledAppsAdapter() {
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_app, parent, false);
-        return new InstalledAppsAdapter.ViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.checkBox.setOnCheckedChangeListener(null);
 
-        holder.icon.setImageDrawable(apps.get(position).icon);
-        holder.appName.setText(apps.get(position).appName);
-        holder.packageName.setText(apps.get(position).packageName);
-        holder.checkBox.setChecked(checked);
+        App app = apps.get(position);
+        holder.icon.setImageDrawable(app.icon);
+        holder.appName.setText(app.appName);
+        holder.packageName.setText(app.packageName);
+        holder.checkBox.setChecked(app.checked);
 
         holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (onCheckListener != null) {
-                onCheckListener.accept(holder.getBindingAdapterPosition());
-            }
+            apps.updateItemAt(holder.getBindingAdapterPosition(), new App(app.appName, app.icon, app.packageName, isChecked));
+            onCheckListener.accept(app.packageName, isChecked);
         });
     }
+
+    public void replaceAll(List<App> models) {
+        apps.beginBatchedUpdates();
+        for (int i = apps.size() - 1; i >= 0; i--) {
+            final App model = apps.get(i);
+            if (!models.contains(model)) {
+                apps.remove(model);
+            }
+        }
+        apps.addAll(models);
+        apps.endBatchedUpdates();
+    }
+
 
     @Override
     public int getItemCount() {
@@ -80,11 +131,20 @@ public class InstalledAppsAdapter extends RecyclerView.Adapter<InstalledAppsAdap
         public final String appName;
         public final Drawable icon;
         public final String packageName;
+        public final boolean checked;
 
-        public App(String appName, Drawable icon, String packageName) {
+        public App(String appName, Drawable icon, String packageName, boolean checked) {
             this.appName = appName;
             this.icon = icon;
             this.packageName = packageName;
+            this.checked = checked;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (obj == null) return false;
+            if (!(obj instanceof App)) return false;
+            return ((App) obj).packageName.equals(this.packageName) && ((App) obj).appName.equals(this.appName) && ((App) obj).checked == this.checked;
         }
     }
 }
