@@ -47,6 +47,7 @@ import cn.gov.xivpn2.xrayconfig.Routing;
 import cn.gov.xivpn2.xrayconfig.RoutingRule;
 import cn.gov.xivpn2.xrayconfig.Sniffing;
 import cn.gov.xivpn2.xrayconfig.Sockopt;
+import cn.gov.xivpn2.xrayconfig.StreamSettings;
 
 public class XiVPNService extends VpnService implements SocketProtect {
 
@@ -301,6 +302,10 @@ public class XiVPNService extends VpnService implements SocketProtect {
                         }
 
                         if (i > 0) {
+                            if (outbound.streamSettings == null) {
+                                outbound.streamSettings = new StreamSettings();
+                                outbound.streamSettings.network = "tcp";
+                            }
                             outbound.streamSettings.sockopt = new Sockopt();
                             outbound.streamSettings.sockopt.dialerProxy = String.format(Locale.ROOT, "CHAIN #%d %s (%s)", id, proxyChains.get(i-1).label, proxyChains.get(i-1).subscription);
                         }
