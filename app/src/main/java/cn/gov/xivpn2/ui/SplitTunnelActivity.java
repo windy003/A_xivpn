@@ -150,24 +150,21 @@ public class SplitTunnelActivity extends AppCompatActivity {
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    searchKeyword = query.toLowerCase();
-                    adapter.replaceAll(filter());
                     return true;
                 }
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
+                    searchKeyword = newText.toLowerCase();
+                    adapter.replaceAll(filter());
                     return true;
                 }
             });
 
-            searchView.setOnCloseListener(new SearchView.OnCloseListener() {
-                @Override
-                public boolean onClose() {
-                    searchKeyword = "";
-                    adapter.replaceAll(filter());
-                    return false;
-                }
+            searchView.setOnCloseListener(() -> {
+                searchKeyword = "";
+                adapter.replaceAll(filter());
+                return false;
             });
         }
 
