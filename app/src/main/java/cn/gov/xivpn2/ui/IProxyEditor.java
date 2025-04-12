@@ -81,5 +81,7 @@ public interface IProxyEditor {
 
     void setValue(String key, String value);
 
+    void notifyValueChanged(String key);
+
     List<ProxyEditTextAdapter.Input> getInputs();
 }

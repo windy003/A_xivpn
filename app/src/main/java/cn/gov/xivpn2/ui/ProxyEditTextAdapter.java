@@ -1,11 +1,13 @@
 package cn.gov.xivpn2.ui;
 
+import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
@@ -304,6 +306,15 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
     }
 
     @Override
+    public void notifyValueChanged(String key) {
+        for (int i = 0; i < inputs.size(); i++) {
+            if (inputs.get(i).key.equals(key)) {
+                this.notifyItemChanged(i);
+            }
+        }
+    }
+
+    @Override
     public int getItemCount() {
         return inputs.size();
     }
@@ -380,12 +391,14 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             editText = itemView.findViewById(R.id.edittext);
 
             editText.addTextChangedListener(this);
+
+            editText.setInputType(editText.getInputType() | EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+            editText.setTypeface(Typeface.MONOSPACE);
         }
 
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
         }
 
         @Override
