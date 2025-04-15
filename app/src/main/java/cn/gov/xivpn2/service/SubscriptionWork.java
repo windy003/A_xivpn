@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -413,6 +414,26 @@ public class SubscriptionWork extends Worker {
 
         outbound.streamSettings = new StreamSettings();
         outbound.streamSettings.network = "tcp";
+
+        if ("ws".equals(query.get("type"))) {
+            outbound.streamSettings.network = "ws";
+            outbound.streamSettings.wsSettings = new WsSettings();
+            outbound.streamSettings.wsSettings.host = query.getOrDefault("host", "");
+            outbound.streamSettings.wsSettings.path = query.getOrDefault("path", "/");
+        } else if ("xhttp".equals(query.get("type"))) {
+            outbound.streamSettings.network = "xhttp";
+            outbound.streamSettings.xHttpSettings = new XHttpSettings();
+            outbound.streamSettings.xHttpSettings.host = query.getOrDefault("host", "");
+            outbound.streamSettings.xHttpSettings.path = query.getOrDefault("path", "/");
+            outbound.streamSettings.xHttpSettings.mode = query.getOrDefault("mode", "packet-up");
+            outbound.streamSettings.xHttpSettings.downloadSettings = null;
+        } else if ("httpupgrade".equals(query.get("type"))) {
+            outbound.streamSettings.network = "httpupgrade";
+            outbound.streamSettings.httpupgradeSettings = new HttpUpgradeSettings();
+            outbound.streamSettings.httpupgradeSettings.host = query.getOrDefault("host", "");
+            outbound.streamSettings.httpupgradeSettings.path = query.getOrDefault("path", "/");
+        }
+
         outbound.streamSettings.security = "none";
         if (query.getOrDefault("security", "").equals("tls")) {
             outbound.streamSettings.security = "tls";
