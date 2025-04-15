@@ -158,9 +158,6 @@ public class ProxiesActivity extends AppCompatActivity {
             return true;
         } else if (item.getItemId() == R.id.from_clipboard) {
 
-            EditText editText = new EditText(this);
-            editText.setHint(R.string.share_link_example);
-
             View view = LayoutInflater.from(this).inflate(R.layout.edit_text, null);
             TextInputEditText editText2 = view.findViewById(R.id.edit_text);
 

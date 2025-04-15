@@ -391,9 +391,6 @@ public class ProxyEditTextAdapter extends RecyclerView.Adapter<RecyclerView.View
             editText = itemView.findViewById(R.id.edittext);
 
             editText.addTextChangedListener(this);
-
-            editText.setInputType(editText.getInputType() | EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-            editText.setTypeface(Typeface.MONOSPACE);
         }
 
 
