@@ -86,7 +86,7 @@ public class MyApplication extends Application {
         workManager.enqueueUniquePeriodicWork(
                 "SUBSCRIPTION",
                 ExistingPeriodicWorkPolicy.UPDATE,
-                new PeriodicWorkRequest.Builder(SubscriptionWork.class, Duration.ofHours(1))
+                new PeriodicWorkRequest.Builder(SubscriptionWork.class, Duration.ofDays(1))
                         .build()
         );
 
