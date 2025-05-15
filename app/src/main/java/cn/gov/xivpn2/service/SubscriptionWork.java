@@ -264,7 +264,7 @@ public class SubscriptionWork extends Worker {
             userInfo = URLDecoder.decode(userInfo, "UTF-8");
         }
 
-        String[] parts = userInfo.split(":");
+        String[] parts = userInfo.split(":", 2);
         server.method = parts[0];
         server.password = parts[1];
 
