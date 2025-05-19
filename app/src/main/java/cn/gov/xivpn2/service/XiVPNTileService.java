@@ -93,7 +93,7 @@ public class XiVPNTileService extends TileService implements XiVPNService.VPNSta
     @Override
     public void onStopListening() {
         Log.d(TAG, "on stop listener");
-        binder.removeListener(this);
+        if (binder != null) binder.removeListener(this);
         unbindService(serviceConnection);
     }
 
