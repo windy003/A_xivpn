@@ -67,6 +67,8 @@ public class XiVPNService extends VpnService implements SocketProtect {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        Log.i(TAG, "on start command");
+
         // https://developer.android.com/develop/connectivity/vpn#user_experience_2
         // https://developer.android.com/develop/connectivity/vpn#detect_always-on
         // We set always-on to false when the service is started by the app,
@@ -208,6 +210,14 @@ public class XiVPNService extends VpnService implements SocketProtect {
         stopSelf();
     }
 
+    @Override
+    public void onRevoke() {
+        Log.i(TAG, "on revoke");
+
+        stopVPN();
+        stopForeground(true);
+    }
+
     private Config buildXrayConfig() {
         Config config = new Config();
         config.inbounds = new ArrayList<>();
@@ -330,6 +340,9 @@ public class XiVPNService extends VpnService implements SocketProtect {
 
     @Override
     public IBinder onBind(Intent intent) {
+        if (intent != null && SERVICE_INTERFACE.equals(intent.getAction())) {
+            return super.onBind(intent);
+        }
         return binder;
     }
 
