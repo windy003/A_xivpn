@@ -109,7 +109,7 @@ public class SubscriptionsActivity extends AppCompatActivity {
             new MaterialAlertDialogBuilder(this)
                     .setTitle(subscription.label)
                     .setView(view)
-                    .setPositiveButton(R.string.update, (dialog, which) -> {
+                    .setPositiveButton(R.string.save, (dialog, which) -> {
                         // edit
                         AppDatabase.getInstance().subscriptionDao().updateUrl(subscription.label, urlEditText.getText().toString());
                         refresh();
