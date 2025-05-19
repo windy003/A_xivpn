@@ -1,5 +1,6 @@
 package cn.gov.xivpn2.service;
 
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
 import com.google.common.reflect.TypeToken;
@@ -91,6 +93,8 @@ public class XiVPNService extends VpnService implements SocketProtect {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "XiVPNService");
             builder.setContentText("XiVPN is running");
             builder.setSmallIcon(R.drawable.baseline_vpn_key_24);
+            builder.setPriority(NotificationCompat.PRIORITY_MAX);
+            builder.setOngoing(true);
             builder.setContentIntent(PendingIntent.getActivity(this, 20, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
             startForeground(NotificationID.getID(), builder.build());
 
