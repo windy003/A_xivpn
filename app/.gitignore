@@ -1,5 +1,5 @@
 /build
-*.so
+# *.so
 /release
 *.apk
 /x86_64
