@@ -62,6 +62,7 @@ _Exported on 2025/7/4 at GMT+8 9:51:31 from Cursor (1.1.6)_
 - `RulesActivity.java` - 路由规则界面
 - `SettingsFragment.java` - 设置界面
 - 各种协议配置界面：`VmessActivity.java`, `VlessActivity.java`, `ShadowsocksActivity.java`, `TrojanActivity.java`, `WireguardActivity.java`
+- XHttpStreamActivity.java 是 XiVPN 项目中用于处理 HTTP 流代理配置的 Activity 文件。它主要负责以下功能：
 
 **⚙️ xrayconfig/** - XRAY配置
 - `Config.java` - 主配置类
