@@ -7,7 +7,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "io.github.exclude0122.xivpn"
+        applicationId "v2_io.github.exclude0122.xivpn"
         minSdk 28
         targetSdk 35
         versionCode 30
